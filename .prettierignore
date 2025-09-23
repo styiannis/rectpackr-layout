@@ -1,0 +1,15 @@
+############################
+# npm, yarn, pnpm
+############################
+
+node_modules
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+############################
+# Folders
+############################
+build
+coverage_report
+dist
