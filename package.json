@@ -29,8 +29,8 @@
   "source": "src/index.ts",
   "main": "dist/cjs/index.js",
   "module": "dist/es/index.js",
-  "unpkg": "./dist/umd/index.js",
-  "jsdelivr": "./dist/umd/index.js",
+  "unpkg": "dist/umd/index.js",
+  "jsdelivr": "dist/umd/index.js",
   "types": "dist/@types/index.d.ts",
   "files": [
     "CHANGELOG.md",
@@ -84,7 +84,8 @@
     ".": {
       "import": "./dist/es/index.js",
       "require": "./dist/cjs/index.js",
-      "default": "./dist/umd/index.js"
+      "types": "./dist/@types/index.d.ts",
+      "default": "./dist/es/index.js"
     }
   }
 }
