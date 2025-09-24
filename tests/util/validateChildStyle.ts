@@ -10,24 +10,27 @@ export function validateChildStyle(
     transform?: string;
   }
 ) {
-  if (element instanceof HTMLElement || element instanceof SVGElement) {
-    expect({
-      width: element.style.width,
-      height: element.style.height,
-      top: element.style.top,
-      left: element.style.left,
-      right: element.style.right,
-      bottom: element.style.bottom,
-      transform: element.style.transform,
-    }).toStrictEqual({
-      width: '',
-      height: '',
-      transform: '',
-      top: '',
-      left: '',
-      right: '',
-      bottom: '',
-      ...expected,
-    });
+  if (!(element instanceof HTMLElement) && !(element instanceof SVGElement)) {
+    expect(element instanceof Text).toBe(true);
+    return;
   }
+
+  expect({
+    width: element.style.width,
+    height: element.style.height,
+    top: element.style.top,
+    left: element.style.left,
+    right: element.style.right,
+    bottom: element.style.bottom,
+    transform: element.style.transform,
+  }).toStrictEqual({
+    width: '',
+    height: '',
+    transform: '',
+    top: '',
+    left: '',
+    right: '',
+    bottom: '',
+    ...expected,
+  });
 }
