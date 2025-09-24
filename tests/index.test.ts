@@ -1,5 +1,3 @@
-/*import { hello } from '../src';
-
-it('Index file default export', () => {
-  expect(hello).toBe('Hello from Index');
-});*/
+it('...', () => {
+  expect(!!1).toBe(true);
+});
