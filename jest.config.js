@@ -2,6 +2,7 @@
 module.exports = {
   preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
   modulePathIgnorePatterns: [
     '<rootDir>/build/',
     '<rootDir>/coverage_report/',
