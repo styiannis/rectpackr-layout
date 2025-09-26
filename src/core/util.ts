@@ -13,8 +13,22 @@ function render(instance: IRectpackr) {
 }
 
 function restartObservingChildren(instance: IRectpackr) {
+  if (instance.pendingStartObservingChildren) {
+    return;
+  }
+
+  instance.pendingStartObservingChildren = true;
   stopObservingChildren(instance);
-  startObservingChildren(instance);
+
+  requestAnimationFrame(() => {
+    instance.pendingStartObservingChildren = false;
+    startObservingChildren(instance);
+  });
+}
+
+function restartObservingImages(instance: IRectpackr) {
+  stopObservingImages(instance);
+  startObservingImages(instance);
 }
 
 function startObservingChildren(instance: IRectpackr) {
@@ -38,6 +52,20 @@ function startObservingContainer(instance: IRectpackr) {
   });
 }
 
+function startObservingImages(instance: IRectpackr) {
+  function callback(this: HTMLImageElement) {
+    instance.loadingImages.delete(this);
+    restartObservingChildren(instance);
+  }
+
+  for (const img of instance.childrenContainer.querySelectorAll('img')) {
+    if (!img.complete && !instance.loadingImages.get(img)) {
+      instance.loadingImages.set(img, callback);
+      img.addEventListener('load', callback, { once: true, passive: true });
+    }
+  }
+}
+
 function stopObservingChildren(instance: IRectpackr) {
   instance.observers.childrenResize.disconnect();
 }
@@ -49,6 +77,13 @@ function stopObservingChildrenContainer(instance: IRectpackr) {
 
 function stopObservingContainer(instance: IRectpackr) {
   instance.observers.containerResize.disconnect();
+}
+
+function stopObservingImages(instance: IRectpackr) {
+  for (const [img, callback] of instance.loadingImages) {
+    img.removeEventListener('load', callback);
+    instance.loadingImages.delete(img);
+  }
 }
 
 function updateStripPack(instance: IRectpackr) {
@@ -81,34 +116,30 @@ function updateStyle(
    * Update children style.
    */
   for (const { element, point } of children) {
-    const x =
+    const xVal =
       point[0] *
       (instance.config.positioning === 'transform' &&
       instance.config['x-direction'] === 'rtl'
         ? -1
         : 1);
 
-    const y =
+    const yVal =
       point[1] *
       (instance.config.positioning === 'transform' &&
       instance.config['y-direction'] === 'btt'
         ? -1
         : 1);
 
-    if (instance.config.positioning === 'offset') {
-      if (instance.config['y-direction'] === 'btt') {
-        element.style.bottom = `${y}px`;
-      } else {
-        element.style.top = `${y}px`;
-      }
+    const x = xVal === 0 ? '0' : `${xVal}px`;
+    const y = yVal === 0 ? '0' : `${yVal}px`;
 
-      if (instance.config['x-direction'] === 'rtl') {
-        element.style.right = `${x}px`;
-      } else {
-        element.style.left = `${x}px`;
-      }
+    if (instance.config.positioning === 'offset') {
+      element.style.inset = {
+        ltr: { ttb: `${y} auto auto ${x}`, btt: `auto auto ${y} ${x}` },
+        rtl: { ttb: `${y} ${x} auto auto`, btt: `auto ${x} ${y} auto` },
+      }[instance.config['x-direction']][instance.config['y-direction']];
     } else {
-      element.style.transform = `translate(${x}px, ${y}px)`;
+      element.style.transform = `translate(${x}, ${y})`;
     }
   }
 
@@ -124,6 +155,7 @@ function updateStyle(
 
 export function onChildrenContainerMutation(instance: IRectpackr) {
   restartObservingChildren(instance);
+  restartObservingImages(instance);
 }
 
 export function onChildResize(
@@ -169,17 +201,7 @@ export function resetStyle(instance: IRectpackr) {
    */
   for (const { element } of instance.children) {
     if (instance.config.positioning === 'offset') {
-      if ('ttb' === instance.config['y-direction']) {
-        element.style.top = '';
-      } else {
-        element.style.bottom = '';
-      }
-
-      if ('ltr' === instance.config['x-direction']) {
-        element.style.left = '';
-      } else {
-        element.style.right = '';
-      }
+      element.style.inset = '';
     } else {
       element.style.transform = '';
     }
@@ -195,10 +217,12 @@ export function startObserving(instance: IRectpackr) {
   startObservingChildren(instance);
   startObservingChildrenContainer(instance);
   startObservingContainer(instance);
+  startObservingImages(instance);
 }
 
 export function stopObserving(instance: IRectpackr) {
   stopObservingChildren(instance);
   stopObservingChildrenContainer(instance);
   stopObservingContainer(instance);
+  stopObservingImages(instance);
 }

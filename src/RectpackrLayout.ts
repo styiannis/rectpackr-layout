@@ -18,14 +18,20 @@ const parseConfig = (config: {
 });
 
 const getStyleTextContent = (config: IRectpackrConfig) => {
-  const insetValue = {
-    ltr: { ttb: '0 auto auto 0', btt: 'auto auto 0 0' },
-    rtl: { ttb: '0 0 auto auto', btt: 'auto 0 0 auto' },
-  }[config['x-direction']][config['y-direction']];
+  let ret = `slot{ box-sizing: border-box; position: relative; display: block; width: 100% }`;
 
-  return `
-    slot{ box-sizing: border-box; position:relative; display:block; width:100% }    
-    ::slotted(:not([slot])){ position:absolute; inset:${insetValue} }`;
+  if (config.positioning === 'transform') {
+    const insetValue = {
+      ltr: { ttb: '0 auto auto 0', btt: 'auto auto 0 0' },
+      rtl: { ttb: '0 0 auto auto', btt: 'auto 0 0 auto' },
+    }[config['x-direction']][config['y-direction']];
+
+    ret = `${ret} ::slotted(:not([slot])){ position: absolute !important; inset: ${insetValue} !important }`;
+  } else {
+    ret = `${ret} ::slotted(:not([slot])){ position: absolute !important }`;
+  }
+
+  return ret;
 };
 
 /* ------------------------------------------------------------------------- */
@@ -70,11 +76,10 @@ export class RectpackrLayout extends HTMLElement {
   }
 
   attributeChangedCallback() {
-    if (!this.shadowRoot) {
-      return;
+    if (this.shadowRoot) {
+      this.#clear();
+      this.#render();
     }
-    this.#clear();
-    this.#render();
   }
 
   connectedCallback() {

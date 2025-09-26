@@ -17,10 +17,12 @@ export interface IRectpackr {
     width: number;
   }[];
   childrenContainer: HTMLElement;
+  loadingImages: Map<HTMLElement, (this: HTMLImageElement) => void>;
   observers: {
     childrenContainerMutation: MutationObserver;
     childrenResize: ResizeObserver;
     containerResize: ResizeObserver;
   };
+  pendingStartObservingChildren: boolean;
   stripPack: BestFitStripPack;
 }

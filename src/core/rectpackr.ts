@@ -33,7 +33,9 @@ export function create<R extends IRectpackr>(
     container,
     children: [] as R['children'],
     childrenContainer,
+    loadingImages: new Map(),
     observers: { childrenContainerMutation, childrenResize, containerResize },
+    pendingStartObservingChildren: false,
     stripPack,
   } as R;
 

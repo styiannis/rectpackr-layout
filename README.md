@@ -2,11 +2,11 @@
 
 A web component that creates layouts by treating your HTML elements as rectangles and packing them using a best-fit 2D strip-packing algorithm.
 
-## Why a Packing Algorithm for Web Layouts?
+## ⚙️ Why a Packing Algorithm for Web Layouts?
 
 Web browsers naturally manage elements as rectangles. `rectpackr-layout` leverages this by applying a best-fit strip-packing algorithm — the same approach used in industrial optimization problems — to web layout creation.
 
-## Intelligent Layouts Through Automated Measurement
+## 🤖 Layouts Through Automated Measurement
 
 The algorithm intelligently works with whatever dimensional information is available:
 
@@ -31,7 +31,7 @@ The algorithm intelligently works with whatever dimensional information is avail
 - **Production-ready precision** when you need exact control
 - **Best of both worlds** — automation when you want it, control when you need it
 
-## Installation
+## 📥 Installation
 
 ### Install the package via your preferred package manager:
 
@@ -68,7 +68,7 @@ Or directly in your HTML:
 </script>
 ```
 
-## API Reference
+## 📖 API Reference
 
 ### Attributes
 
@@ -77,9 +77,9 @@ Or directly in your HTML:
 Defines the CSS method used to position items.
 
 - `transform` (_Default_): Uses `transform: translate(x, y)`
-- `offset`: Uses CSS offset properties (`top`/`bottom` and `left`/`right`)
+- `offset`: Uses CSS `inset` property for precise positioning
 
-> **Performance Note:** The default `transform` value typically offers better performance through hardware acceleration. Use `offset` only when child elements already use `transform` for other purposes (animation etc.).
+> 💡 **Performance Note:** The default `transform` value typically offers better performance through hardware acceleration. Use `offset` only when child elements already use `transform` for other purposes (animation etc.).
 
 **`x-direction`**
 
@@ -97,21 +97,68 @@ Controls the vertical packing direction.
 
 ### A Note on Visual Order & Accessibility
 
-The `x-direction` and `y-direction` attributes control visual placement, which may differ from DOM order.
+The `x-direction` and `y-direction` attributes control visual placement, which may create a difference between the visual arrangement and the underlying DOM order.
 
-- **DOM Order is Preserved:** The library never changes the underlying HTML structure, ensuring correct tab order and screen reader navigation
-- **Visual Order is Optimized:** The algorithm places items for spatial efficiency, which may not match linear DOM order
+- **DOM Order is Preserved:** The underlying HTML structure remains unchanged
+- **Visual Order is Algorithm-Determined**: Item placement follows the packing logic and your direction settings
 
-**Best Practice:** Ensure your HTML source reflects the logical reading order.
+## 🚀 Usage Examples
 
-## Browser Support
+### Fluid, Responsive Layout
+
+```html
+<rectpackr-layout>
+  <div>Card 1</div>
+  <div>Card 2</div>
+  <div>Card 3</div>
+</rectpackr-layout>
+
+<style>
+  rectpackr-layout {
+    container-type: inline-size;
+    display: block;
+  }
+
+  rectpackr-layout > * {
+    /* Fluid width based on container queries */
+    width: 100%;
+  }
+
+  @container (min-width: 400px) {
+    rectpackr-layout > * {
+      width: 50%;
+    }
+  }
+
+  @container (min-width: 800px) {
+    rectpackr-layout > * {
+      width: 33.33%;
+    }
+  }
+</style>
+```
+
+### Dynamic Content Handling
+
+```html
+<rectpackr-layout id="dynamic-layout">
+  <!-- Content can be added/removed dynamically -->
+</rectpackr-layout>
+
+<script>
+  // The layout automatically adjusts to content changes
+  document.getElementById('dynamic-layout').appendChild(newElement);
+</script>
+```
+
+## ✅ Browser Support
 
 Modern browsers with Web Components support.
 
-## Issues and Support
+## 🔧 Issues and Support
 
 If you encounter any issues or have questions, please [open an issue](https://github.com/styiannis/rectpackr-layout/issues).
 
-## License
+## 📄 License
 
 This project is licensed under the [MIT License](https://github.com/styiannis/rectpackr-layout?tab=MIT-1-ov-file#readme).
