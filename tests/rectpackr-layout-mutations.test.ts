@@ -28,7 +28,8 @@ describe('Container element mutations', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       });
     });
 
@@ -46,9 +47,12 @@ describe('Container element mutations', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${
-          Math.min(i, children.length - 2) * childWidth
-        }px, 0px)`,
+        transform:
+          i === 0
+            ? 'translate(0, 0)'
+            : `translate(${
+                Math.min(i, children.length - 2) * childWidth
+              }px, 0)`,
       });
     });
 
@@ -66,9 +70,12 @@ describe('Container element mutations', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${
-          Math.min(i, children.length - 2) * childWidth
-        }px, 0px)`,
+        transform:
+          i === 0
+            ? 'translate(0, 0)'
+            : `translate(${
+                Math.min(i, children.length - 2) * childWidth
+              }px, 0)`,
       })
     );
 
@@ -97,7 +104,8 @@ describe('Container element mutations', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       })
     );
 
@@ -111,7 +119,8 @@ describe('Container element mutations', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       })
     );
 
@@ -163,7 +172,8 @@ describe('Container element mutations', () => {
         validateChildStyle(child, {
           width: `${childWidth}px`,
           height: `${childHeight}px`,
-          transform: `translate(${i * childWidth}px, 0px)`,
+          transform:
+            i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
         });
       });
     };
@@ -174,7 +184,8 @@ describe('Container element mutations', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       })
     );
 

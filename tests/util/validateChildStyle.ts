@@ -3,10 +3,7 @@ export function validateChildStyle(
   expected: {
     width?: string;
     height?: string;
-    top?: string;
-    left?: string;
-    right?: string;
-    bottom?: string;
+    inset?: string;
     transform?: string;
   }
 ) {
@@ -18,19 +15,13 @@ export function validateChildStyle(
   expect({
     width: element.style.width,
     height: element.style.height,
-    top: element.style.top,
-    left: element.style.left,
-    right: element.style.right,
-    bottom: element.style.bottom,
+    inset: element.style.inset,
     transform: element.style.transform,
   }).toStrictEqual({
     width: '',
     height: '',
+    inset: '',
     transform: '',
-    top: '',
-    left: '',
-    right: '',
-    bottom: '',
     ...expected,
   });
 }

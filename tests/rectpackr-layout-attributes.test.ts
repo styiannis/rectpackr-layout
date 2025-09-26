@@ -6,11 +6,18 @@ import {
 } from './util/types';
 
 describe('Change attributes', () => {
-  const shadowRootChildrenStyle = Object.freeze({
-    ltr: '::slotted(:not([slot])){ position:absolute; inset:0 auto auto 0 }',
-    rtl: '::slotted(:not([slot])){ position:absolute; inset:0 0 auto auto }',
-    ttb: '::slotted(:not([slot])){ position:absolute; inset:0 auto auto 0 }',
-    btt: '::slotted(:not([slot])){ position:absolute; inset:auto auto 0 0 }',
+  const shadowRootOffsetChildrenStyle = Object.freeze({
+    ltr: '::slotted(:not([slot])){ position: absolute !important }',
+    rtl: '::slotted(:not([slot])){ position: absolute !important }',
+    ttb: '::slotted(:not([slot])){ position: absolute !important }',
+    btt: '::slotted(:not([slot])){ position: absolute !important }',
+  });
+
+  const shadowRootTransformChildrenStyle = Object.freeze({
+    ltr: '::slotted(:not([slot])){ position: absolute !important; inset: 0 auto auto 0 !important }',
+    rtl: '::slotted(:not([slot])){ position: absolute !important; inset: 0 0 auto auto !important }',
+    ttb: '::slotted(:not([slot])){ position: absolute !important; inset: 0 auto auto 0 !important }',
+    btt: '::slotted(:not([slot])){ position: absolute !important; inset: auto auto 0 0 !important }',
   });
 
   afterEach(() => {
@@ -38,10 +45,7 @@ describe('Change attributes', () => {
       expectedStyle: string,
       expected: {
         element: HTMLElement;
-        top?: string;
-        left?: string;
-        right?: string;
-        bottom?: string;
+        inset?: string;
         transform?: string;
       }[]
     ) => {
@@ -49,14 +53,11 @@ describe('Change attributes', () => {
 
       expect(shadowRootStyle.innerHTML).toContain(expectedStyle);
 
-      expected.forEach(({ element, top, left, right, bottom, transform }) => {
+      expected.forEach(({ element, inset, transform }) => {
         validateChildStyle(element, {
           width: `${childWidth}px`,
           height: `${childHeight}px`,
-          top: top ?? '',
-          left: left ?? '',
-          right: right ?? '',
-          bottom: bottom ?? '',
+          inset: inset ?? '',
           transform: transform ?? '',
         });
       });
@@ -66,112 +67,77 @@ describe('Change attributes', () => {
 
     const shadowRootStyle = wcElement.shadowRoot!.querySelector('style')!;
 
-    expect(shadowRootStyle.innerHTML).toContain(shadowRootChildrenStyle.ltr);
+    expect(shadowRootStyle.innerHTML).toContain(
+      shadowRootTransformChildrenStyle.ltr
+    );
 
     children.forEach((child, i) =>
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       })
     );
 
     changeAttributeAndValidate(
       { 'x-direction': 'rtl' },
-      shadowRootChildrenStyle.rtl,
+      shadowRootTransformChildrenStyle.rtl,
       [
-        {
-          element: children[0]!,
-          transform: `translate(${0 * (-1 * childWidth)}px, 0px)`,
-        },
+        { element: children[0]!, transform: 'translate(0, 0)' },
         {
           element: children[1]!,
-          transform: `translate(${1 * (-1 * childWidth)}px, 0px)`,
+          transform: `translate(${1 * (-1 * childWidth)}px, 0)`,
         },
         {
           element: children[2]!,
-          transform: `translate(${2 * (-1 * childWidth)}px, 0px)`,
+          transform: `translate(${2 * (-1 * childWidth)}px, 0)`,
         },
         {
           element: children[3]!,
-          transform: `translate(${3 * (-1 * childWidth)}px, 0px)`,
+          transform: `translate(${3 * (-1 * childWidth)}px, 0)`,
         },
       ]
     );
 
     changeAttributeAndValidate(
       { positioning: 'offset' },
-      shadowRootChildrenStyle.rtl,
+      shadowRootOffsetChildrenStyle.rtl,
       [
-        {
-          element: children[0]!,
-          top: '0px',
-          right: `${0 * childWidth}px`,
-        },
-        {
-          element: children[1]!,
-          top: '0px',
-          right: `${1 * childWidth}px`,
-        },
-        {
-          element: children[2]!,
-          top: '0px',
-          right: `${2 * childWidth}px`,
-        },
-        {
-          element: children[3]!,
-          top: '0px',
-          right: `${3 * childWidth}px`,
-        },
+        { element: children[0]!, inset: '0 0 auto auto' },
+        { element: children[1]!, inset: `0 ${1 * childWidth}px auto auto` },
+        { element: children[2]!, inset: `0 ${2 * childWidth}px auto auto` },
+        { element: children[3]!, inset: `0 ${3 * childWidth}px auto auto` },
       ]
     );
 
     changeAttributeAndValidate(
       { 'x-direction': 'ltr' },
-      shadowRootChildrenStyle.ltr,
+      shadowRootOffsetChildrenStyle.ltr,
       [
-        {
-          element: children[0]!,
-          top: '0px',
-          left: `${0 * childWidth}px`,
-        },
-        {
-          element: children[1]!,
-          top: '0px',
-          left: `${1 * childWidth}px`,
-        },
-        {
-          element: children[2]!,
-          top: '0px',
-          left: `${2 * childWidth}px`,
-        },
-        {
-          element: children[3]!,
-          top: '0px',
-          left: `${3 * childWidth}px`,
-        },
+        { element: children[0]!, inset: '0 auto auto 0' },
+        { element: children[1]!, inset: `0 auto auto ${1 * childWidth}px` },
+        { element: children[2]!, inset: `0 auto auto ${2 * childWidth}px` },
+        { element: children[3]!, inset: `0 auto auto ${3 * childWidth}px` },
       ]
     );
 
     changeAttributeAndValidate(
       { positioning: 'transform' },
-      shadowRootChildrenStyle.ltr,
+      shadowRootTransformChildrenStyle.ltr,
       [
-        {
-          element: children[0]!,
-          transform: `translate(${0 * childWidth}px, 0px)`,
-        },
+        { element: children[0]!, transform: `translate(0, 0)` },
         {
           element: children[1]!,
-          transform: `translate(${1 * childWidth}px, 0px)`,
+          transform: `translate(${1 * childWidth}px, 0)`,
         },
         {
           element: children[2]!,
-          transform: `translate(${2 * childWidth}px, 0px)`,
+          transform: `translate(${2 * childWidth}px, 0)`,
         },
         {
           element: children[3]!,
-          transform: `translate(${3 * childWidth}px, 0px)`,
+          transform: `translate(${3 * childWidth}px, 0)`,
         },
       ]
     );
@@ -200,10 +166,7 @@ describe('Change attributes', () => {
       expectedStyle: string,
       expected: {
         element: HTMLElement;
-        top?: string;
-        left?: string;
-        right?: string;
-        bottom?: string;
+        inset?: string;
         transform?: string;
       }[]
     ) => {
@@ -211,14 +174,11 @@ describe('Change attributes', () => {
 
       expect(shadowRootStyle.innerHTML).toContain(expectedStyle);
 
-      expected.forEach(({ element, top, left, right, bottom, transform }) => {
+      expected.forEach(({ element, inset, transform }) => {
         validateChildStyle(element, {
           width: `${childWidth}px`,
           height: `${childHeight}px`,
-          top: top ?? '',
-          left: left ?? '',
-          right: right ?? '',
-          bottom: bottom ?? '',
+          inset: inset ?? '',
           transform: transform ?? '',
         });
       });
@@ -228,112 +188,77 @@ describe('Change attributes', () => {
 
     const shadowRootStyle = wcElement.shadowRoot!.querySelector('style')!;
 
-    expect(shadowRootStyle.innerHTML).toContain(shadowRootChildrenStyle.ttb);
+    expect(shadowRootStyle.innerHTML).toContain(
+      shadowRootTransformChildrenStyle.ttb
+    );
 
     children.forEach((child, i) =>
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(0px, ${i * childHeight}px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(0, ${i * childHeight}px)`,
       })
     );
 
     changeAttributeAndValidate(
       { 'y-direction': 'btt' },
-      shadowRootChildrenStyle.btt,
+      shadowRootTransformChildrenStyle.btt,
       [
-        {
-          element: children[0]!,
-          transform: `translate(0px, ${0 * (-1 * childHeight)}px)`,
-        },
+        { element: children[0]!, transform: `translate(0, 0)` },
         {
           element: children[1]!,
-          transform: `translate(0px, ${1 * (-1 * childHeight)}px)`,
+          transform: `translate(0, ${1 * (-1 * childHeight)}px)`,
         },
         {
           element: children[2]!,
-          transform: `translate(0px, ${2 * (-1 * childHeight)}px)`,
+          transform: `translate(0, ${2 * (-1 * childHeight)}px)`,
         },
         {
           element: children[3]!,
-          transform: `translate(0px, ${3 * (-1 * childHeight)}px)`,
+          transform: `translate(0, ${3 * (-1 * childHeight)}px)`,
         },
       ]
     );
 
     changeAttributeAndValidate(
       { positioning: 'offset' },
-      shadowRootChildrenStyle.btt,
+      shadowRootOffsetChildrenStyle.btt,
       [
-        {
-          element: children[0]!,
-          bottom: `${0 * childHeight}px`,
-          left: '0px',
-        },
-        {
-          element: children[1]!,
-          bottom: `${1 * childHeight}px`,
-          left: '0px',
-        },
-        {
-          element: children[2]!,
-          bottom: `${2 * childHeight}px`,
-          left: '0px',
-        },
-        {
-          element: children[3]!,
-          bottom: `${3 * childHeight}px`,
-          left: '0px',
-        },
+        { element: children[0]!, inset: 'auto auto 0 0' },
+        { element: children[1]!, inset: `auto auto ${1 * childHeight}px 0` },
+        { element: children[2]!, inset: `auto auto ${2 * childHeight}px 0` },
+        { element: children[3]!, inset: `auto auto ${3 * childHeight}px 0` },
       ]
     );
 
     changeAttributeAndValidate(
       { 'y-direction': 'ttb' },
-      shadowRootChildrenStyle.ttb,
+      shadowRootOffsetChildrenStyle.ttb,
       [
-        {
-          element: children[0]!,
-          top: `${0 * childHeight}px`,
-          left: '0px',
-        },
-        {
-          element: children[1]!,
-          top: `${1 * childHeight}px`,
-          left: '0px',
-        },
-        {
-          element: children[2]!,
-          top: `${2 * childHeight}px`,
-          left: '0px',
-        },
-        {
-          element: children[3]!,
-          top: `${3 * childHeight}px`,
-          left: '0px',
-        },
+        { element: children[0]!, inset: '0 auto auto 0' },
+        { element: children[1]!, inset: `${1 * childHeight}px auto auto 0` },
+        { element: children[2]!, inset: `${2 * childHeight}px auto auto 0` },
+        { element: children[3]!, inset: `${3 * childHeight}px auto auto 0` },
       ]
     );
 
     changeAttributeAndValidate(
       { positioning: 'transform' },
-      shadowRootChildrenStyle.ttb,
+      shadowRootTransformChildrenStyle.ttb,
       [
-        {
-          element: children[0]!,
-          transform: `translate(0px, ${0 * childHeight}px)`,
-        },
+        { element: children[0]!, transform: `translate(0, 0)` },
         {
           element: children[1]!,
-          transform: `translate(0px, ${1 * childHeight}px)`,
+          transform: `translate(0, ${1 * childHeight}px)`,
         },
         {
           element: children[2]!,
-          transform: `translate(0px, ${2 * childHeight}px)`,
+          transform: `translate(0, ${2 * childHeight}px)`,
         },
         {
           element: children[3]!,
-          transform: `translate(0px, ${3 * childHeight}px)`,
+          transform: `translate(0, ${3 * childHeight}px)`,
         },
       ]
     );

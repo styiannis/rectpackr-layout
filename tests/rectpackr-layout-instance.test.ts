@@ -67,12 +67,18 @@ describe('Validate web-component instance', () => {
     expect(slot.innerHTML).toBe('');
 
     expect(style.innerHTML).toContain(
-      'slot{ box-sizing: border-box; position:relative; display:block; width:100% }'
+      'slot{ box-sizing: border-box; position: relative; display: block; width: 100% }'
     );
 
-    expect(style.innerHTML).toContain(
-      `::slotted(:not([slot])){ position:absolute; inset:${insetValue} }`
-    );
+    if (attributes.positioning === 'offset') {
+      expect(style.innerHTML).toContain(
+        `::slotted(:not([slot])){ position: absolute !important }`
+      );
+    } else {
+      expect(style.innerHTML).toContain(
+        `::slotted(:not([slot])){ position: absolute !important; inset: ${insetValue} !important }`
+      );
+    }
 
     clear();
   });

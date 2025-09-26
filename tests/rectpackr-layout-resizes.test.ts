@@ -29,7 +29,8 @@ describe('Elements resizes', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(0px, ${i * childHeight}px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(0, ${i * childHeight}px)`,
       })
     );
 
@@ -40,7 +41,8 @@ describe('Elements resizes', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       })
     );
 
@@ -51,7 +53,8 @@ describe('Elements resizes', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       })
     );
 
@@ -62,7 +65,8 @@ describe('Elements resizes', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(0px, ${i * childHeight}px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(0, ${i * childHeight}px)`,
       })
     );
 
@@ -111,7 +115,8 @@ describe('Elements resizes', () => {
       validateChildStyle(child, {
         width: `${childWidth}px`,
         height: `${childHeight}px`,
-        transform: `translate(${i * childWidth}px, 0px)`,
+        transform:
+          i === 0 ? 'translate(0, 0)' : `translate(${i * childWidth}px, 0)`,
       })
     );
 
@@ -119,16 +124,16 @@ describe('Elements resizes', () => {
     resizeChildAndValidate(children[1]!, { width: containerWidth }, [
       {
         element: children[0]!,
-        transform: `translate(0px, 0px)`,
+        transform: 'translate(0, 0)',
       },
       {
         element: children[1]!,
         width: `${containerWidth}px`,
-        transform: `translate(0px, ${childHeight}px)`,
+        transform: `translate(0, ${childHeight}px)`,
       },
       {
         element: children[2]!,
-        transform: `translate(0px, ${2 * childHeight}px)`,
+        transform: `translate(0, ${2 * childHeight}px)`,
       },
 
       {
@@ -141,22 +146,22 @@ describe('Elements resizes', () => {
     resizeChildAndValidate(children[2]!, { width: 2 * containerWidth }, [
       {
         element: children[0]!,
-        transform: `translate(0px, 0px)`,
+        transform: 'translate(0, 0)',
       },
       {
         element: children[1]!,
         width: `${containerWidth}px`,
-        transform: `translate(0px, ${childHeight}px)`,
+        transform: `translate(0, ${childHeight}px)`,
       },
       {
         element: children[2]!,
         width: `${2 * containerWidth}px`,
-        transform: `translate(0px, ${2 * childHeight}px)`,
+        transform: `translate(0, ${2 * childHeight}px)`,
       },
 
       {
         element: children[3]!,
-        transform: `translate(0px, ${3 * childHeight}px)`,
+        transform: `translate(0, ${3 * childHeight}px)`,
       },
     ]);
 
@@ -165,21 +170,21 @@ describe('Elements resizes', () => {
       {
         element: children[0]!,
         height: `${3 * containerWidth}px`,
-        transform: `translate(0px, 0px)`,
+        transform: 'translate(0, 0)',
       },
       {
         element: children[1]!,
         width: `${containerWidth}px`,
-        transform: `translate(0px, ${3 * containerWidth}px)`,
+        transform: `translate(0, ${3 * containerWidth}px)`,
       },
       {
         element: children[2]!,
         width: `${2 * containerWidth}px`,
-        transform: `translate(0px, ${3 * containerWidth + childHeight}px)`,
+        transform: `translate(0, ${3 * containerWidth + childHeight}px)`,
       },
       {
         element: children[3]!,
-        transform: `translate(0px, ${3 * containerWidth + 2 * childHeight}px)`,
+        transform: `translate(0, ${3 * containerWidth + 2 * childHeight}px)`,
       },
     ]);
 
@@ -188,12 +193,12 @@ describe('Elements resizes', () => {
       {
         element: children[0]!,
         height: `${3 * containerWidth}px`,
-        transform: `translate(0px, 0px)`,
+        transform: 'translate(0, 0)',
       },
       {
         element: children[1]!,
         width: `${containerWidth}px`,
-        transform: `translate(0px, ${3 * containerWidth}px)`,
+        transform: `translate(0, ${3 * containerWidth}px)`,
       },
       {
         element: children[2]!,
@@ -203,7 +208,7 @@ describe('Elements resizes', () => {
       },
       {
         element: children[3]!,
-        transform: `translate(0px, ${3 * containerWidth + childHeight}px)`,
+        transform: `translate(0, ${3 * containerWidth + childHeight}px)`,
       },
     ]);
 

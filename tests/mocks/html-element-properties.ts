@@ -1,5 +1,3 @@
-import './mocks';
-
 // Mock DOM element dimensions
 Object.defineProperties(HTMLElement.prototype, {
   offsetWidth: {
