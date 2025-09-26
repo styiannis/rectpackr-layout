@@ -1,6 +1,6 @@
 {
   "name": "rectpackr-layout",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "A web component that creates layouts by packing HTML elements as rectangles using a best-fit 2D strip-packing algorithm. Automatically measures dimensions and handles mixed content.",
   "keywords": [
     "best-fit",

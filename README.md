@@ -77,7 +77,7 @@ Or directly in your HTML:
 Defines the CSS method used to position items.
 
 - `transform` (_Default_): Uses `transform: translate(x, y)`
-- `offset`: Uses CSS offset properties (`top`/`bottom` and `left`/`right`)
+- `offset`: Uses CSS `inset` property for precise positioning
 
 > 💡 **Performance Note:** The default `transform` value typically offers better performance through hardware acceleration. Use `offset` only when child elements already use `transform` for other purposes (animation etc.).
 
