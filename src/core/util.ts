@@ -68,6 +68,11 @@ function startObservingImages(instance: IRectpackr) {
 
 function stopObservingChildren(instance: IRectpackr) {
   instance.observers.childrenResize.disconnect();
+
+  if (instance.childrenContainer.children.length === 0) {
+    instance.children.length = 0;
+    resetStyle(instance);
+  }
 }
 
 function stopObservingChildrenContainer(instance: IRectpackr) {
@@ -196,9 +201,7 @@ export function onContainerResize(instance: IRectpackr) {
 }
 
 export function resetStyle(instance: IRectpackr) {
-  /*
-   * Reset children style.
-   */
+  // Reset children style
   for (const { element } of instance.children) {
     if (instance.config.positioning === 'offset') {
       element.style.inset = '';
@@ -207,9 +210,7 @@ export function resetStyle(instance: IRectpackr) {
     }
   }
 
-  /*
-   * Reset container style.
-   */
+  // Reset container style
   instance.container.style.height = '';
 }
 
