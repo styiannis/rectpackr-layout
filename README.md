@@ -2,6 +2,7 @@
 
 [![NPM Version](https://img.shields.io/npm/v/rectpackr-layout)](https://www.npmjs.com/package/rectpackr-layout)
 [![Coverage Status](https://img.shields.io/coverallsCoverage/github/styiannis/rectpackr-layout)](https://coveralls.io/github/styiannis/rectpackr-layout?branch=main)
+[![CodePen Demos](https://img.shields.io/badge/CodePen-Demos-blue)](https://codepen.io/collection/dGpeLa)
 
 A web component that creates layouts by treating your HTML elements as rectangles and packing them using a best-fit 2D strip-packing algorithm.
 
@@ -186,6 +187,26 @@ The `x-direction` and `y-direction` attributes control visual placement, which m
   document.getElementById('dynamic-layout').appendChild(newElement);
 </script>
 ```
+
+## 🎯 Live Demos
+
+### Consistent Width Gallery
+
+See predictable masonry-style layouts with equal-width elements
+
+[View on CodePen](https://codepen.io/styiannis/pen/ogbzBXg)
+
+### Mixed Dimension Gallery
+
+Explore optimal packing of variably-sized elements and aspect ratios
+
+[View on CodePen](https://codepen.io/styiannis/pen/XJXjayR)
+
+### Interactive Playground
+
+Experiment with real-time controls and dynamic content manipulation
+
+[View on CodePen](https://codepen.io/styiannis/pen/qEbqMBZ)
 
 ## ✅ Browser Support
 
