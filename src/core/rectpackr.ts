@@ -33,9 +33,9 @@ export function create<R extends IRectpackr>(
     container,
     children: [] as R['children'],
     childrenContainer,
+    isPendingStartObservingChildren: false,
     loadingImages: new Map(),
     observers: { childrenContainerMutation, childrenResize, containerResize },
-    pendingStartObservingChildren: false,
     stripPack,
   } as R;
 
@@ -47,5 +47,6 @@ export function create<R extends IRectpackr>(
 export function clear<R extends IRectpackr>(instance: R) {
   stopObserving(instance);
   resetStyle(instance);
+  instance.children.length = 0;
   instance.stripPack.reset();
 }

@@ -6,12 +6,8 @@ import {
 } from './util/types';
 
 describe('Change attributes', () => {
-  const shadowRootOffsetChildrenStyle = Object.freeze({
-    ltr: '::slotted(:not([slot])){ position: absolute !important }',
-    rtl: '::slotted(:not([slot])){ position: absolute !important }',
-    ttb: '::slotted(:not([slot])){ position: absolute !important }',
-    btt: '::slotted(:not([slot])){ position: absolute !important }',
-  });
+  const shadowRootOffsetChildrenStyle =
+    '::slotted(:not([slot])){ position: absolute !important }';
 
   const shadowRootTransformChildrenStyle = Object.freeze({
     ltr: '::slotted(:not([slot])){ position: absolute !important; inset: 0 auto auto 0 !important }',
@@ -102,7 +98,7 @@ describe('Change attributes', () => {
 
     changeAttributeAndValidate(
       { positioning: 'offset' },
-      shadowRootOffsetChildrenStyle.rtl,
+      shadowRootOffsetChildrenStyle,
       [
         { element: children[0]!, inset: '0 0 auto auto' },
         { element: children[1]!, inset: `0 ${1 * childWidth}px auto auto` },
@@ -113,7 +109,7 @@ describe('Change attributes', () => {
 
     changeAttributeAndValidate(
       { 'x-direction': 'ltr' },
-      shadowRootOffsetChildrenStyle.ltr,
+      shadowRootOffsetChildrenStyle,
       [
         { element: children[0]!, inset: '0 auto auto 0' },
         { element: children[1]!, inset: `0 auto auto ${1 * childWidth}px` },
@@ -223,7 +219,7 @@ describe('Change attributes', () => {
 
     changeAttributeAndValidate(
       { positioning: 'offset' },
-      shadowRootOffsetChildrenStyle.btt,
+      shadowRootOffsetChildrenStyle,
       [
         { element: children[0]!, inset: 'auto auto 0 0' },
         { element: children[1]!, inset: `auto auto ${1 * childHeight}px 0` },
@@ -234,7 +230,7 @@ describe('Change attributes', () => {
 
     changeAttributeAndValidate(
       { 'y-direction': 'ttb' },
-      shadowRootOffsetChildrenStyle.ttb,
+      shadowRootOffsetChildrenStyle,
       [
         { element: children[0]!, inset: '0 auto auto 0' },
         { element: children[1]!, inset: `${1 * childHeight}px auto auto 0` },

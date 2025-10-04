@@ -13,15 +13,15 @@ function render(instance: IRectpackr) {
 }
 
 function restartObservingChildren(instance: IRectpackr) {
-  if (instance.pendingStartObservingChildren) {
+  if (instance.isPendingStartObservingChildren) {
     return;
   }
 
-  instance.pendingStartObservingChildren = true;
+  instance.isPendingStartObservingChildren = true;
   stopObservingChildren(instance);
 
   requestAnimationFrame(() => {
-    instance.pendingStartObservingChildren = false;
+    instance.isPendingStartObservingChildren = false;
     startObservingChildren(instance);
   });
 }
@@ -53,15 +53,15 @@ function startObservingContainer(instance: IRectpackr) {
 }
 
 function startObservingImages(instance: IRectpackr) {
-  function callback(this: HTMLImageElement) {
+  function onImgLoad(this: HTMLImageElement) {
     instance.loadingImages.delete(this);
     restartObservingChildren(instance);
   }
 
   for (const img of instance.childrenContainer.querySelectorAll('img')) {
     if (!img.complete && !instance.loadingImages.get(img)) {
-      instance.loadingImages.set(img, callback);
-      img.addEventListener('load', callback, { once: true, passive: true });
+      instance.loadingImages.set(img, onImgLoad);
+      img.addEventListener('load', onImgLoad, { once: true, passive: true });
     }
   }
 }
@@ -80,8 +80,8 @@ function stopObservingContainer(instance: IRectpackr) {
 }
 
 function stopObservingImages(instance: IRectpackr) {
-  for (const [img, callback] of instance.loadingImages) {
-    img.removeEventListener('load', callback);
+  for (const [img, onImgLoad] of instance.loadingImages) {
+    img.removeEventListener('load', onImgLoad);
     instance.loadingImages.delete(img);
   }
 }
@@ -112,9 +112,7 @@ function updateStyle(
   instance: IRectpackr,
   children: { element: IRectpackrChildElement; point: [number, number] }[]
 ) {
-  /*
-   * Update children style.
-   */
+  // Update children style
   for (const { element, point } of children) {
     const xVal =
       point[0] *
@@ -143,9 +141,7 @@ function updateStyle(
     }
   }
 
-  /*
-   * Update container style.
-   */
+  // Update container style
   instance.container.style.height = `${instance.stripPack.packedHeight}px`;
 }
 
@@ -154,6 +150,10 @@ function updateStyle(
 /* ------------------------------------------------------------------------- */
 
 export function onChildrenContainerMutation(instance: IRectpackr) {
+  if (instance.childrenContainer.children.length === 0) {
+    onChildResize(instance, []);
+  }
+
   restartObservingChildren(instance);
   restartObservingImages(instance);
 }
@@ -196,9 +196,7 @@ export function onContainerResize(instance: IRectpackr) {
 }
 
 export function resetStyle(instance: IRectpackr) {
-  /*
-   * Reset children style.
-   */
+  // Reset children style
   for (const { element } of instance.children) {
     if (instance.config.positioning === 'offset') {
       element.style.inset = '';
@@ -207,9 +205,7 @@ export function resetStyle(instance: IRectpackr) {
     }
   }
 
-  /*
-   * Reset container style.
-   */
+  // Reset container style
   instance.container.style.height = '';
 }
 
