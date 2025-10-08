@@ -1,5 +1,9 @@
 # Rectpackr Layout
 
+[![NPM Version](https://img.shields.io/npm/v/rectpackr-layout)](https://www.npmjs.com/package/rectpackr-layout)
+[![Coverage Status](https://img.shields.io/coverallsCoverage/github/styiannis/rectpackr-layout)](https://coveralls.io/github/styiannis/rectpackr-layout?branch=main)
+[![CodePen Demos](https://img.shields.io/badge/CodePen-Demos-blue)](https://codepen.io/collection/dGpeLa)
+
 A web component that creates layouts by treating your HTML elements as rectangles and packing them using a best-fit 2D strip-packing algorithm.
 
 ## ⚙️ Why a Packing Algorithm for Web Layouts?
@@ -66,6 +70,39 @@ Or directly in your HTML:
 <script type="module">
   import 'rectpackr-layout';
 </script>
+```
+
+### Using a CDN (No Build Step Needed)
+
+Include it directly in your HTML via CDN:
+
+#### unpkg
+
+```html
+<script type="module" src="https://unpkg.com/rectpackr-layout"></script>
+```
+
+#### jsDelivr
+
+```html
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/npm/rectpackr-layout"
+></script>
+```
+
+#### esm.sh
+
+```html
+<script type="module" src="https://esm.sh/rectpackr-layout"></script>
+```
+
+### Once installed, use the web component anywhere in your HTML:
+
+```html
+<rectpackr-layout>
+  <div>Your content here</div>
+</rectpackr-layout>
 ```
 
 ## 📖 API Reference
@@ -150,6 +187,26 @@ The `x-direction` and `y-direction` attributes control visual placement, which m
   document.getElementById('dynamic-layout').appendChild(newElement);
 </script>
 ```
+
+## 🎯 Live Demos
+
+### Consistent Width Gallery
+
+See predictable masonry-style layouts with equal-width elements
+
+[View on CodePen](https://codepen.io/styiannis/pen/ogbzBXg)
+
+### Mixed Dimension Gallery
+
+Explore optimal packing of variably-sized elements and aspect ratios
+
+[View on CodePen](https://codepen.io/styiannis/pen/XJXjayR)
+
+### Interactive Playground
+
+Experiment with real-time controls and dynamic content manipulation
+
+[View on CodePen](https://codepen.io/styiannis/pen/qEbqMBZ)
 
 ## ✅ Browser Support
 
