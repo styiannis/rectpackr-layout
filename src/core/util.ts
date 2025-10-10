@@ -9,19 +9,28 @@ const isValidChildInstance = (el: Element): el is IRectpackrChildElement =>
   el instanceof HTMLElement || el instanceof SVGElement;
 
 function render(instance: IRectpackr) {
-  updateStyle(instance, updateStripPack(instance));
-}
-
-function restartObservingChildren(instance: IRectpackr) {
-  if (instance.isPendingStartObservingChildren) {
+  if (instance.isPending.render) {
     return;
   }
 
-  instance.isPendingStartObservingChildren = true;
+  instance.isPending.render = true;
+
+  requestAnimationFrame(() => {
+    instance.isPending.render = false;
+    updateStyle(instance, updateStripPack(instance));
+  });
+}
+
+function restartObservingChildren(instance: IRectpackr) {
+  if (instance.isPending.restartObservingChildren) {
+    return;
+  }
+
+  instance.isPending.restartObservingChildren = true;
   stopObservingChildren(instance);
 
   requestAnimationFrame(() => {
-    instance.isPendingStartObservingChildren = false;
+    instance.isPending.restartObservingChildren = false;
     startObservingChildren(instance);
   });
 }
