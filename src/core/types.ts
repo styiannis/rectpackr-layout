@@ -17,8 +17,8 @@ export interface IRectpackr {
     width: number;
   }[];
   childrenContainer: HTMLElement;
-  isPendingStartObservingChildren: boolean;
-  loadingImages: Map<HTMLElement, (this: HTMLImageElement) => void>;
+  isPending: { render: boolean; restartObservingChildren: boolean };
+  loadingImages: Map<HTMLImageElement, (this: HTMLImageElement) => void>;
   observers: {
     childrenContainerMutation: MutationObserver;
     childrenResize: ResizeObserver;

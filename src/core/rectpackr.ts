@@ -33,7 +33,7 @@ export function create<R extends IRectpackr>(
     container,
     children: [] as R['children'],
     childrenContainer,
-    isPendingStartObservingChildren: false,
+    isPending: { render: false, restartObservingChildren: false },
     loadingImages: new Map(),
     observers: { childrenContainerMutation, childrenResize, containerResize },
     stripPack,
