@@ -191,7 +191,7 @@ export function onChildResize(
 export function onContainerResize(instance: IRectpackr) {
   const containerWidth = Math.max(
     1,
-    parseFloat(getComputedStyle(instance.container).width)
+    Number.parseFloat(getComputedStyle(instance.container).width)
   );
 
   if (containerWidth === instance.stripPack.stripWidth) {

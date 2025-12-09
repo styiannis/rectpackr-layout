@@ -10,4 +10,4 @@ if (!customElements.get('rectpackr-layout')) {
   customElements.define('rectpackr-layout', RectpackrLayout);
 }
 
-export default RectpackrLayout;
+export { RectpackrLayout as default } from './RectpackrLayout';

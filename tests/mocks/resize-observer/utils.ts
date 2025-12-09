@@ -68,10 +68,10 @@ export const triggerResize = (
             ...(hasOffsetProperties
               ? { width: target.offsetWidth, height: target.offsetHeight }
               : { width: target.clientWidth, height: target.clientHeight }),
-            top: parseFloat(target.style.top),
-            left: parseFloat(target.style.left),
-            bottom: parseFloat(target.style.bottom),
-            right: parseFloat(target.style.right),
+            top: Number.parseFloat(target.style.top),
+            left: Number.parseFloat(target.style.left),
+            bottom: Number.parseFloat(target.style.bottom),
+            right: Number.parseFloat(target.style.right),
             x: -1, // Not currently used
             y: -1, // Not currently used
             toJSON: () => {

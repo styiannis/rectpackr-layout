@@ -15,8 +15,8 @@ function arrayOfNodesToNodeList(array: Node[]) {
       return nodes[index] || null;
     },
     *[Symbol.iterator](): IterableIterator<Node> {
-      for (let i = 0; i < nodes.length; i++) {
-        yield nodes[i] as Node;
+      for (const nd of nodes) {
+        yield nd;
       }
     },
     forEach(
