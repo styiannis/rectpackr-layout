@@ -29,24 +29,13 @@ function exportsEntries(node, label = 'exports', expected = pkgType) {
   }
 
   return Object.entries(node).flatMap(([key, child]) => {
-    // A .d.ts has no module system, and dist/@types gets no package.json, so
-    // "import" would fail on it -- nor can an "import" nested under "types"
-    // give it one, hence the flattening. Still checked for existence.
-    if (key === 'types') {
-      return exportsEntries(child, `${label} > types`).map(
-        ([leafLabel, path]) => [leafLabel, path, null]
-      );
-    }
-
-    // "default" passes through because Node takes it when nothing else matches.
-    // Any other condition is a bundler's: it settles nothing, hence the null.
     let newExpected = null;
 
     if (key === 'import') {
       newExpected = 'module';
     } else if (key === 'require') {
       newExpected = 'commonjs';
-    } else if (key.startsWith('.') || key === 'default') {
+    } else if (key.startsWith('.') || key === 'default' || key === 'types') {
       newExpected = expected;
     }
 
@@ -93,9 +82,12 @@ function main() {
 
   const declared = Array.from(
     new Set([
+      pkg.customElements,
+      pkg.jsdelivr,
       pkg.main,
       pkg.module,
       pkg.types,
+      pkg.unpkg,
       ...entries.map(([, path]) => path),
     ])
   ).filter(Boolean);
@@ -127,7 +119,6 @@ function main() {
   const mismatched = [
     ['main', pkg.main, pkgType],
     ['module', pkg.module, 'module'],
-    // @todo: Continue here...
     ...entries,
   ].filter(
     ([, path, expected]) =>

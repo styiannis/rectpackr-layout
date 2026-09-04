@@ -79,16 +79,13 @@ Include it directly in your HTML via CDN:
 #### unpkg
 
 ```html
-<script type="module" src="https://unpkg.com/rectpackr-layout"></script>
+<script src="https://unpkg.com/rectpackr-layout"></script>
 ```
 
 #### jsDelivr
 
 ```html
-<script
-  type="module"
-  src="https://cdn.jsdelivr.net/npm/rectpackr-layout"
-></script>
+<script src="https://cdn.jsdelivr.net/npm/rectpackr-layout"></script>
 ```
 
 #### esm.sh

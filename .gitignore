@@ -34,9 +34,6 @@ $RECYCLE.BIN/
 ############################
 
 node_modules
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
 
 ############################
 # Dotenv
@@ -55,9 +52,9 @@ pnpm-lock.yaml
 ############################
 # Folders
 ############################
-build
-coverage_report
-dist
+/build
+/coverage_report
+/dist
 
 ############################
 # Exclude folders

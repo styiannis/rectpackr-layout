@@ -38,6 +38,17 @@ const getStyleTextContent = (config: IRectpackrConfig) => {
 /* -------------------------- Helper functions // -------------------------- */
 /* ------------------------------------------------------------------------- */
 
+/**
+ * Packs its children as rectangles using a best-fit 2D strip-packing algorithm.
+ *
+ * @element rectpackr-layout
+ *
+ * @attr {transform|offset} positioning - CSS method used to position items. Defaults to `transform`.
+ * @attr {ltr|rtl} x-direction - Horizontal packing direction. Defaults to `ltr`.
+ * @attr {ttb|btt} y-direction - Vertical packing direction. Defaults to `ttb`.
+ *
+ * @slot - The elements to pack.
+ */
 export class RectpackrLayout extends HTMLElement {
   #obj: IRectpackr | undefined = undefined;
 

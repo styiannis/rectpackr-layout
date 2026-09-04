@@ -8,8 +8,9 @@ yarn.lock
 pnpm-lock.yaml
 
 ############################
-# Folders
+# Build output
 ############################
-build
-coverage_report
-dist
+
+/build
+/coverage_report
+/dist

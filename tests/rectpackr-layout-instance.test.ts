@@ -11,7 +11,7 @@ describe('Validate web-component instance', () => {
     IRectpackrLayoutAttributes['positioning'],
     IRectpackrLayoutAttributes['x-direction'],
     IRectpackrLayoutAttributes['y-direction'],
-    string
+    string,
   ][] = [
     ['offset', 'ltr', 'ttb', '0 auto auto 0'],
     ['offset', 'ltr', 'btt', 'auto auto 0 0'],
