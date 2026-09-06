@@ -28,16 +28,17 @@
   },
   "type": "commonjs",
   "source": "src/index.ts",
-  "main": "dist/cjs/index.js",
-  "module": "dist/es/index.js",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/es/index.mjs",
+  "types": "dist/@types/cjs/index.d.cts",
   "unpkg": "dist/umd/index.js",
   "jsdelivr": "dist/umd/index.js",
-  "types": "dist/cjs/index.d.ts",
   "customElements": "dist/custom-elements.json",
   "files": [
     "CHANGELOG.md",
     "dist"
   ],
+  "sideEffects": true,
   "engines": {
     "node": ">=18.12.0",
     "npm": ">=8.0.0"
@@ -55,7 +56,7 @@
     ]
   },
   "scripts": {
-    "analyze": "cem analyze --globs \"dist/es/**/*.js\" --outdir ./dist",
+    "analyze": "cem analyze --globs \"dist/es/**/*.mjs\" --outdir ./dist",
     "build": "node ./scripts/clear.cjs ./dist && rollup -c && npm run analyze",
     "dev": "node ./scripts/clear.cjs ./dist && rollup -c --watch",
     "check-declared-paths": "node ./scripts/check-declared-paths.cjs",
@@ -98,12 +99,12 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/es/index.d.ts",
-        "default": "./dist/es/index.js"
+        "types": "./dist/@types/es/index.d.mts",
+        "default": "./dist/es/index.mjs"
       },
       "require": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
+        "types": "./dist/@types/cjs/index.d.cts",
+        "default": "./dist/cjs/index.cjs"
       }
     },
     "./package.json": "./package.json"

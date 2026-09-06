@@ -1,82 +1,32 @@
-const { execFileSync } = require('node:child_process');
+// Takes every route a consumer has into dist/: the "exports" map through the
+// package name, the "main"/"module" files by path, and dist/umd through both
+// branches of its wrapper. A route works only if it hands back the component
+// class and, where it executes the file, registers the custom element.
+// Gated on dist/ directories, so pruning a format needs no edit here.
+
 const { JSDOM } = require('jsdom');
 const { existsSync, readFileSync } = require('node:fs');
 const { join } = require('node:path');
-
-const pkg = require('../package.json');
+const { pathToFileURL } = require('node:url');
 
 const root = join(__dirname, '..');
+
+const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+
+// @todo: Revisit
+// The tag the code registers and the global the UMD wrapper defines.
 const tagName = 'rectpackr-layout';
 const umdGlobal = 'RectpackrLayout';
 
-// The conditions of the "." subpath, each pairing a runtime file with the
-// declarations describing it: the manifest's own account of what resolves.
-const subpath = pkg.exports?.['.'] ?? {};
+// Every route defines the custom element at module scope, so none loads in
+// plain Node: no HTMLElement, no customElements.
+const createWindow = () =>
+  new JSDOM('', { pretendToBeVisual: true, runScripts: 'outside-only' }).window;
 
-// What the consumer is left holding: the exports map promises the class as
-// .default, while the UMD wrapper hands back the class itself.
-const asDefault = (namespace) => namespace.default;
-const asItself = (namespace) => namespace;
-
-/**
- * Every way this package can be loaded, reached the way a consumer reaches it.
- * The two exports-map conditions go through a bare specifier -- Node resolves
- * a package by its own name -- so a broken "exports" fails here instead of
- * downstream. The UMD file is loaded through both branches of its wrapper.
- *
- * Entries in the same group promise the same exports, so their shapes are
- * compared against each other. `file` is the artifact an entry needs and
- * `declarations` the types describing it, both named by the manifest so this
- * script keeps no second opinion about where a build puts things.
- */
-const ENTRIES = {
-  require: {
-    group: 'module',
-    what: `require('${pkg.name}')`,
-    file: subpath.require?.default,
-    declarations: subpath.require?.types,
-    load: () => require(pkg.name),
-    pick: asDefault,
-  },
-  import: {
-    group: 'module',
-    what: `import('${pkg.name}')`,
-    file: subpath.import?.default,
-    declarations: subpath.import?.types,
-    load: () => import(pkg.name),
-    pick: asDefault,
-  },
-  'umd-require': {
-    group: 'umd',
-    what: `require('${pkg.unpkg}')`,
-    file: pkg.unpkg,
-    load: () => require(join(root, pkg.unpkg)),
-    pick: asItself,
-  },
-  'umd-script': {
-    group: 'umd',
-    what: `<script src="${pkg.unpkg}">`,
-    file: pkg.unpkg,
-    load: (window) => {
-      window.eval(readFileSync(join(root, pkg.unpkg), 'utf8'));
-
-      return window[umdGlobal];
-    },
-    pick: asItself,
-  },
-};
-
-/**
- * The package registers a custom element on load, so plain Node cannot run it:
- * there is no HTMLElement, no customElements. A DOM is installed globally
- * first, the way a browser would already have one. The window is returned as
- * well, for the entry that loads a script into it instead of importing.
- */
-function installDom() {
-  const { window } = new JSDOM('', {
-    pretendToBeVisual: true,
-    runScripts: 'outside-only',
-  });
+// Loaded modules reach for those on globalThis, so the first window is spread
+// over it.
+function installGlobalDom() {
+  const window = createWindow();
 
   for (const key of Object.getOwnPropertyNames(window)) {
     if (!(key in globalThis)) {
@@ -89,154 +39,196 @@ function installDom() {
   }
 
   globalThis.window = window;
+}
+
+// Swapped per route that executes a file, so its own define() fills the
+// registry -- reusing a filled one would pass every route after the first.
+// The window is handed back for the UMD script branch, which evals into it.
+function freshRealm() {
+  const window = createWindow();
+
+  for (const key of ['customElements', 'HTMLElement']) {
+    Object.defineProperty(
+      globalThis,
+      key,
+      Object.getOwnPropertyDescriptor(window, key)
+    );
+  }
 
   return window;
 }
 
-async function loadEntry(key) {
-  const { what, load, pick } = ENTRIES[key];
+// The exports map hands back a namespace holding the class as .default, the
+// UMD wrapper the class itself.
+const component = (exported) =>
+  typeof exported === 'function' ? exported : exported?.default;
 
-  const window = installDom();
-  const namespace = await load(window);
-
-  if (!customElements.get(tagName)) {
-    throw new Error(`${what} did not register <${tagName}>`);
-  }
-
-  if (typeof pick(namespace) !== 'function') {
-    throw new Error(`${what} exposes no component class`);
-  }
-
-  return namespace;
-}
-
-/**
- * What a consumer actually sees: every export, by name and kind. Comparing
- * this string catches a shape drift -- a default collapsed into
- * module.exports, an export only one build emits -- without this script
- * needing to know in advance what the exports are. Something with no named
- * exports at all reports its own type, so "module.exports = Class" reads as
- * "function" rather than as an empty, accidentally-matching list.
- */
-function shapeOf(namespace) {
-  const names = Object.keys(namespace).sort();
+// Every export by name and kind, or the value's own type when it has none, so
+// `module.exports = Class` reads as "function" rather than as an empty list
+// that would match any other.
+function shapeOf(exported) {
+  const names = Object.keys(exported ?? {}).sort();
 
   return names.length === 0
-    ? typeof namespace
-    : names.map((name) => `${name}:${typeof namespace[name]}`).join(', ');
+    ? typeof exported
+    : names.map((name) => `${name}:${typeof exported[name]}`).join(', ');
 }
 
-/**
- * Declarations are resolved and read rather than loaded, so their check is the
- * type-level counterpart of the runtime one: the entry hands the consumer a
- * default export, and the declarations describing it have to say the same.
- * Both spellings the compiler emits count.
- *
- * @param {string} path Path to a declaration file, relative to the package root.
- * @returns {boolean} Whether it declares a default export.
- */
-function declaresDefault(path) {
-  const source = readFileSync(join(root, path), 'utf8');
+// `dir` gates the route, `entry` is the file it needs, `fresh` marks the route
+// that executes the file rather than reusing a cached module. Routes in a
+// `group` promise the same thing, so comparing shapes catches a condition
+// resolving somewhere other than the file beside it.
+const routes = [
+  { dir: 'dist/@types/es', entry: 'index.d.mts' },
+  { dir: 'dist/@types/cjs', entry: 'index.d.cts' },
+  {
+    dir: 'dist/es',
+    entry: 'index.mjs',
+    via: `import('./dist/es/index.mjs')`,
+    group: 'module',
+    fresh: true,
+    load: (path) => import(pathToFileURL(path).href),
+  },
+  {
+    dir: 'dist/es',
+    entry: 'index.mjs',
+    via: `import('${pkg.name}')`,
+    group: 'module',
+    load: () => import(pkg.name),
+  },
+  {
+    dir: 'dist/cjs',
+    entry: 'index.cjs',
+    via: `require('./dist/cjs/index.cjs')`,
+    group: 'module',
+    fresh: true,
+    load: (path) => require(path),
+  },
+  {
+    dir: 'dist/cjs',
+    entry: 'index.cjs',
+    via: `require('${pkg.name}')`,
+    group: 'module',
+    load: () => require(pkg.name),
+  },
+  {
+    dir: 'dist/umd',
+    entry: 'index.js',
+    via: `<script src="./dist/umd/index.js">`,
+    group: 'umd',
+    fresh: true,
+    load: (path, window) => {
+      window.eval(readFileSync(path, 'utf8'));
+      return window[umdGlobal];
+    },
+  },
+  {
+    dir: 'dist/umd',
+    entry: 'index.js',
+    via: `require('./dist/umd/index.js')`,
+    group: 'umd',
+    fresh: true,
+    load: (path) => require(path),
+  },
+];
 
-  return /export\s+default\b|\bas\s+default\s*[,}]/.test(source);
-}
+function selectBuiltRoutes() {
+  // The directory, not the entry file: a pruned format leaves no directory at
+  // all, while one that exists but holds no barrel is a build that went wrong
+  // -- reported per route further down, not treated as "not built".
+  const built = routes.filter(({ dir }) => existsSync(join(root, dir)));
 
-/**
- * The declarations are built by their own BUILD_FORMATS entries, so they can
- * be absent while the code they describe is present. Absent is reported;
- * present but silent about the default export is a mismatch and fails.
- *
- * @param {{ what: string, declarations?: string, pick: Function }} entry
- * @returns {string} A note to append to the entry's line in the report.
- */
-function checkDeclarations({ what, declarations, pick }) {
-  if (!declarations) {
-    return '';
-  }
-
-  if (!existsSync(join(root, declarations))) {
-    return ' (no declarations built)';
-  }
-
-  if (pick === asDefault && !declaresDefault(declarations)) {
-    throw new Error(
-      `${declarations} does not declare the default export that ${what} hands out`
+  if (built.length === 0) {
+    console.error(
+      `Nothing was built: none of ${[...new Set(routes.map((r) => r.dir))].join(
+        ', '
+      )}\nexists. Run "npm run build" before this step.`
     );
+    process.exitCode = 1;
   }
 
-  return ` (typed by ${declarations})`;
+  return built;
 }
 
-async function main() {
-  const [entry] = process.argv.slice(2);
-
-  if (entry) {
-    console.log(shapeOf(await loadEntry(entry)));
-    return;
-  }
-
+async function checkRoutes(built) {
+  const problems = [];
+  const groups = new Map();
   const report = [];
-  const shapes = {};
 
-  for (const [key, spec] of Object.entries(ENTRIES)) {
-    // Each format is built on its own (BUILD_FORMATS), so a missing artifact
-    // means "not built here", not "broken", and the entry steps aside saying
-    // so. Whether the manifest may promise it anyway is check-declared-paths'
-    // question, and this script does not answer it twice.
-    if (!spec.file || !existsSync(join(root, spec.file))) {
-      const why = spec.file ? `${spec.file} not built` : 'not declared';
+  for (const { dir, entry, via, group, fresh, load } of built) {
+    const path = join(root, dir, entry);
 
-      report.push(`  ${spec.what} -- skipped, ${why}`);
+    if (!existsSync(path)) {
+      // The build always emits this entry when the format's directory exists
+      // (rollup.config.mjs feeds every format the same src/index.ts input),
+      // so a missing one means a build that failed partway, not a valid state.
+      problems.push(`${dir}/ holds no ${entry} -- nothing to load`);
       continue;
     }
 
-    // Every entry registers the same tag, and a registry the first one filled
-    // makes the next one's registration look successful without it ever
-    // happening -- so each gets its own process, and an empty registry to fill.
-    try {
-      shapes[key] = execFileSync(process.execPath, [__filename, key], {
-        stdio: ['ignore', 'pipe', 'inherit'],
-        encoding: 'utf8',
-      }).trim();
-    } catch {
-      // The child already reported the reason.
-      process.exitCode = 1;
-      return;
+    // Declarations do not exist at runtime, so the file being there is the
+    // whole check. check-declared-paths.cjs owns what they say.
+    if (!load) {
+      report.push(`${dir}/${entry} present`);
+      continue;
     }
 
-    report.push(`  ${spec.what} -> ${shapes[key]}${checkDeclarations(spec)}`);
+    const window = fresh ? freshRealm() : null;
+    const exported = await load(path, window);
+    const shape = shapeOf(exported);
+
+    if (typeof component(exported) !== 'function') {
+      problems.push(`${via} hands back ${shape}, not the component class`);
+    }
+
+    // Only where this route executed the file: a cached module was registered
+    // by whichever route loaded it first, and would pass here saying nothing.
+    if (fresh && !customElements.get(tagName)) {
+      problems.push(`${via} registered no <${tagName}>`);
+    }
+
+    groups.set(group, [...(groups.get(group) ?? []), { via, shape }]);
+    report.push(`${via} -> ${shape}`);
   }
 
-  const checked = Object.keys(shapes);
-
-  // Skipping everything would otherwise pass in silence, which is the one
-  // result this script must never give.
-  if (checked.length === 0) {
-    throw new Error(
-      `No built entry point to load\n\n${report.join('\n')}\n\nRun "npm run build" first.`
-    );
-  }
-
-  // The point of publishing a group is that its entries are interchangeable.
-  // Any disagreement is a packaging bug, whatever the exports happen to be.
-  for (const group of new Set(Object.values(ENTRIES).map((e) => e.group))) {
-    const members = checked.filter((key) => ENTRIES[key].group === group);
-
-    if (new Set(members.map((key) => shapes[key])).size > 1) {
-      const listed = members
-        .map((key) => `  ${ENTRIES[key].what} -> ${shapes[key]}`)
-        .join('\n');
-
-      throw new Error(
-        `${group} entries disagree on what they export:\n${listed}`
+  for (const [group, members] of groups) {
+    if (new Set(members.map((member) => member.shape)).size > 1) {
+      problems.push(
+        `${group} routes disagree on what they export:\n` +
+          members.map(({ via, shape }) => `    ${via} -> ${shape}`).join('\n')
       );
     }
   }
 
-  console.log(`Loaded every built entry point\n\n${report.join('\n')}\n`);
+  return { problems, report };
 }
 
-main().catch((error) => {
-  console.error(`Distribution bundles failed to load\n\n${error.message}\n`);
-  process.exitCode = 1;
-});
+installGlobalDom();
+
+const builtRoutes = selectBuiltRoutes();
+
+checkRoutes(builtRoutes)
+  .then(({ problems, report }) => {
+    if (problems.length > 0) {
+      console.error(
+        `Distribution bundles do not load correctly\n\n${problems
+          .map((problem, i) => `[${i}] ${problem}`)
+          .join('\n')}\n`
+      );
+
+      process.exitCode = 1;
+      return;
+    }
+
+    if (!process.exitCode) {
+      console.log(
+        `${report.length} load routes ok\n\n${report
+          .map((line) => `  ${line}`)
+          .join('\n')}\n`
+      );
+    }
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
