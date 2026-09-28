@@ -5,7 +5,7 @@ import { IRectpackr, IRectpackrChildElement } from './types';
 /* -------------------------- // Helper functions -------------------------- */
 /* ------------------------------------------------------------------------- */
 
-const isValidChildInstance = (el: Element): el is IRectpackrChildElement =>
+const isValidChildInstance = (el: Node): el is IRectpackrChildElement =>
   el instanceof HTMLElement || el instanceof SVGElement;
 
 function render(instance: IRectpackr) {
@@ -19,6 +19,17 @@ function render(instance: IRectpackr) {
     instance.isPending.render = false;
     updateStyle(instance, updateStripPack(instance));
   });
+}
+
+function resetChildStyle(
+  instance: IRectpackr,
+  element: IRectpackrChildElement
+) {
+  if (instance.config.positioning === 'offset') {
+    element.style.inset = '';
+  } else {
+    element.style.transform = '';
+  }
 }
 
 function restartObservingChildren(instance: IRectpackr) {
@@ -161,7 +172,23 @@ function updateStyle(
 /* -------------------------- Helper functions // -------------------------- */
 /* ------------------------------------------------------------------------- */
 
-export function onChildrenContainerMutation(instance: IRectpackr) {
+export function onChildrenContainerMutation(
+  instance: IRectpackr,
+  records: MutationRecord[]
+) {
+  for (const { removedNodes } of records) {
+    for (const node of removedNodes) {
+      if (
+        isValidChildInstance(node) &&
+        // Still in the container: moved (a keyed reorder), not removed.
+        node.parentNode !== instance.childrenContainer &&
+        instance.children.delete(node)
+      ) {
+        resetChildStyle(instance, node);
+      }
+    }
+  }
+
   if (instance.childrenContainer.children.length === 0) {
     instance.children.clear();
     onChildResize(instance, []);
@@ -210,11 +237,7 @@ export function onContainerResize(instance: IRectpackr) {
 export function resetStyle(instance: IRectpackr) {
   // Reset children style
   for (const element of instance.children.keys()) {
-    if (instance.config.positioning === 'offset') {
-      element.style.inset = '';
-    } else {
-      element.style.transform = '';
-    }
+    resetChildStyle(instance, element);
   }
 
   // Reset container style

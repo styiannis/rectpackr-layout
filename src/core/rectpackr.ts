@@ -14,8 +14,8 @@ export function create<R extends IRectpackr>(
   childrenContainer: R['childrenContainer'],
   config: R['config']
 ) {
-  const childrenContainerMutation = new MutationObserver(() =>
-    onChildrenContainerMutation(instance)
+  const childrenContainerMutation = new MutationObserver((records) =>
+    onChildrenContainerMutation(instance, records)
   );
 
   const childrenResize = new ResizeObserver((entries) =>
