@@ -41,8 +41,11 @@ function restartObservingImages(instance: IRectpackr) {
 }
 
 function startObservingChildren(instance: IRectpackr) {
+  instance.children.length = 0;
+
   for (const child of instance.childrenContainer.children) {
     if (isValidChildInstance(child)) {
+      instance.children.push({ element: child, width: 0, height: 0 });
       instance.observers.childrenResize.observe(child, { box: 'border-box' });
     }
   }
@@ -160,6 +163,7 @@ function updateStyle(
 
 export function onChildrenContainerMutation(instance: IRectpackr) {
   if (instance.childrenContainer.children.length === 0) {
+    instance.children.length = 0;
     onChildResize(instance, []);
   }
 
@@ -171,15 +175,18 @@ export function onChildResize(
   instance: IRectpackr,
   entries: ResizeObserverEntry[]
 ) {
-  instance.children.length = 0;
+  if (entries.length > 0) {
+    const known = new Map(
+      instance.children.map((child) => [child.element as Element, child])
+    );
 
-  for (const { borderBoxSize, target } of entries) {
-    if (isValidChildInstance(target)) {
-      instance.children.push({
-        element: target,
-        width: borderBoxSize[0] ? borderBoxSize[0].inlineSize : 0,
-        height: borderBoxSize[0] ? borderBoxSize[0].blockSize : 0,
-      });
+    for (const { borderBoxSize, target } of entries) {
+      const child = known.get(target);
+
+      if (child) {
+        child.width = borderBoxSize[0] ? borderBoxSize[0].inlineSize : 0;
+        child.height = borderBoxSize[0] ? borderBoxSize[0].blockSize : 0;
+      }
     }
   }
 

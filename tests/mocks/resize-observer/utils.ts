@@ -20,7 +20,8 @@ const elementHasOffsetProperties = (
 
 export const triggerResize = (
   element: Element & { style: CSSStyleDeclaration },
-  size: Partial<Pick<DOMRectReadOnly, 'height' | 'width'>>
+  size: Partial<Pick<DOMRectReadOnly, 'height' | 'width'>>,
+  options: { onlyTarget?: boolean } = {}
 ) => {
   if (size.width !== undefined) {
     element.style.width = `${size.width}px`;
@@ -40,7 +41,10 @@ export const triggerResize = (
     const entries =
       MockResizeObserver.getObservedElements(observer)?.reduce(
         (acc, target) => {
-          if (!elementSupportsInlineCSSStyle(target)) {
+          if (
+            (options.onlyTarget && target !== element) ||
+            !elementSupportsInlineCSSStyle(target)
+          ) {
             return acc;
           }
 

@@ -19,6 +19,7 @@
   ],
   "author": "Yiannis Stergiou <hello@styiannis.dev>",
   "license": "MIT",
+  "homepage": "https://github.com/styiannis/rectpackr-layout",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/styiannis/rectpackr-layout.git"
@@ -84,15 +85,15 @@
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.6.2",
+    "@types/node": "^26.6.3",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
     "jsdom": "^28.1.0",
     "oxlint": "^1.85.0",
-    "prettier": "^3.9.8",
-    "rollup": "^4.63.4",
+    "prettier": "^3.9.9",
+    "rollup": "^4.63.5",
     "rollup-plugin-dts": "^6.5.1",
-    "ts-jest": "^29.4.12",
+    "ts-jest": "^29.4.14",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3"
   },

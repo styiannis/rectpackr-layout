@@ -280,7 +280,7 @@ export function setupTest(
     child.dimensions.height = dimensions.height ?? child.dimensions.height;
 
     if (triggerRender) {
-      triggerResize(child.element, child.dimensions);
+      triggerResize(child.element, child.dimensions, { onlyTarget: true });
     }
   }
 
