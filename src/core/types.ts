@@ -11,11 +11,7 @@ export interface IRectpackrConfig {
 export interface IRectpackr {
   config: IRectpackrConfig;
   container: HTMLElement;
-  children: {
-    element: IRectpackrChildElement;
-    height: number;
-    width: number;
-  }[];
+  children: Map<IRectpackrChildElement, { height: number; width: number }>;
   childrenContainer: HTMLElement;
   isPending: { render: boolean; restartObservingChildren: boolean };
   loadingImages: Map<HTMLImageElement, (this: HTMLImageElement) => void>;
