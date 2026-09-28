@@ -86,8 +86,12 @@ export class RectpackrLayout extends HTMLElement {
     }
   }
 
-  attributeChangedCallback() {
-    if (this.shadowRoot) {
+  attributeChangedCallback(
+    _name: string,
+    oldValue: string | null,
+    newValue: string | null
+  ) {
+    if (this.shadowRoot && oldValue !== newValue) {
       this.#clear();
       this.#render();
     }
