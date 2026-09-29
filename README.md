@@ -2,217 +2,149 @@
 
 [![NPM Version](https://img.shields.io/npm/v/rectpackr-layout)](https://www.npmjs.com/package/rectpackr-layout)
 [![Coverage Status](https://img.shields.io/coverallsCoverage/github/styiannis/rectpackr-layout)](https://coveralls.io/github/styiannis/rectpackr-layout?branch=main)
-[![CodePen Demos](https://img.shields.io/badge/CodePen-Demos-blue)](https://codepen.io/collection/dGpeLa)
 
-A web component that creates layouts by treating your HTML elements as rectangles and packing them using a best-fit 2D strip-packing algorithm.
+A custom element that lays out its own children by treating them as rectangles
+and packing them into a strip as wide as itself. It measures each child, picks
+the position that adds the least height, and writes that position back as an
+inline style. A change in a child's size, in the set of children or in its own
+width packs them again. The children stay in the light DOM and keep their own
+CSS.
 
-## ⚙️ Why a Packing Algorithm for Web Layouts?
-
-Web browsers naturally manage elements as rectangles. `rectpackr-layout` leverages this by applying a best-fit strip-packing algorithm — the same approach used in industrial optimization problems — to web layout creation.
-
-## 🤖 Layouts Through Automated Measurement
-
-The algorithm intelligently works with whatever dimensional information is available:
-
-### How It Works:
-
-- **Automatically measures** element dimensions through browser APIs
-- **Uses width as the primary constraint** for predictable flow
-- **Adapts to any height** — whether fixed, aspect-ratio based, or content-determined
-- **Handles mixed content seamlessly** without manual configuration
-
-### You Can:
-
-- Set explicit widths for pixel-perfect control
-- Use percentage-based or responsive widths
-- Let elements determine their own natural sizes
-- Mix and match approaches within the same layout
-
-### What This Enables:
-
-- **Truly flexible layouts** that work with your existing CSS approach
-- **Zero-configuration setups** for rapid prototyping
-- **Production-ready precision** when you need exact control
-- **Best of both worlds** — automation when you want it, control when you need it
-
-## 📥 Installation
-
-### Install the package via your preferred package manager:
-
-#### npm
+## Install
 
 ```bash
 npm install rectpackr-layout
 ```
 
-#### yarn
+`yarn add` and `pnpm add` work the same way. The element runs in the browser,
+from Chrome 92, Firefox 92 and Safari 15.4. Installing and bundling it requires
+Node 20.19 or later. The package ships an ES build and a CommonJS build with
+type definitions for each, and a self-contained UMD bundle for a plain
+`<script>` tag. Its one runtime dependency is
+[best-fit-strip-pack](https://www.npmjs.com/package/best-fit-strip-pack), which
+supplies the placement heuristic. Importing the module registers
+`<rectpackr-layout>`. There is no constructor to call and no initialisation
+step.
 
-```bash
-yarn add rectpackr-layout
-```
+## One element, and the children it is given
 
-#### pnpm
-
-```bash
-pnpm install rectpackr-layout
-```
-
-Then import it in your JavaScript:
-
-```javascript
-// In your main.js or component file
-import 'rectpackr-layout';
-```
-
-Or directly in your HTML:
-
-```html
-<script type="module">
-  import 'rectpackr-layout';
-</script>
-```
-
-### Using a CDN (No Build Step Needed)
-
-Include it directly in your HTML via CDN:
-
-#### unpkg
+The element wraps the content and nothing else. Sizes below are explicit so
+the result can be checked; in practice the children size themselves and the
+component reads whatever the browser computed.
 
 ```html
 <script src="https://unpkg.com/rectpackr-layout"></script>
-```
 
-#### jsDelivr
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/rectpackr-layout"></script>
-```
-
-#### esm.sh
-
-```html
-<script type="module" src="https://esm.sh/rectpackr-layout"></script>
-```
-
-### Once installed, use the web component anywhere in your HTML:
-
-```html
-<rectpackr-layout>
-  <div>Your content here</div>
+<rectpackr-layout style="display: block; width: 600px">
+  <div style="width: 180px; height: 120px"></div>
+  <div style="width: 180px; height: 240px"></div>
+  <div style="width: 120px; height: 120px"></div>
+  <div style="width: 240px; height: 160px"></div>
+  <div style="width: 120px; height: 200px"></div>
+  <div style="width: 180px; height: 100px"></div>
+  <div style="width: 240px; height: 120px"></div>
+  <div style="width: 120px; height: 160px"></div>
 </rectpackr-layout>
 ```
 
-## 📖 API Reference
+Each child ends up absolutely positioned, moved into place by a `transform`
+the component writes:
 
-### Attributes
-
-**`positioning`**
-
-Defines the CSS method used to position items.
-
-- `transform` (_Default_): Uses `transform: translate(x, y)`
-- `offset`: Uses CSS `inset` property for precise positioning
-
-> 💡 **Performance Note:** The default `transform` value typically offers better performance through hardware acceleration. Use `offset` only when child elements already use `transform` for other purposes (animation etc.).
-
-**`x-direction`**
-
-Controls the horizontal packing direction.
-
-- `ltr` (_Default_): Left-to-right packing
-- `rtl`: Right-to-left packing
-
-**`y-direction`**
-
-Controls the vertical packing direction.
-
-- `ttb` (_Default_): Top-to-bottom packing
-- `btt`: Bottom-to-top packing
-
-### A Note on Visual Order & Accessibility
-
-The `x-direction` and `y-direction` attributes control visual placement, which may create a difference between the visual arrangement and the underlying DOM order.
-
-- **DOM Order is Preserved:** The underlying HTML structure remains unchanged
-- **Visual Order is Algorithm-Determined**: Item placement follows the packing logic and your direction settings
-
-## 🚀 Usage Examples
-
-### Fluid, Responsive Layout
-
-```html
-<rectpackr-layout>
-  <div>Card 1</div>
-  <div>Card 2</div>
-  <div>Card 3</div>
-</rectpackr-layout>
-
-<style>
-  rectpackr-layout {
-    container-type: inline-size;
-    display: block;
-  }
-
-  rectpackr-layout > * {
-    /* Fluid width based on container queries */
-    width: 100%;
-  }
-
-  @container (min-width: 400px) {
-    rectpackr-layout > * {
-      width: 50%;
-    }
-  }
-
-  @container (min-width: 800px) {
-    rectpackr-layout > * {
-      width: 33.33%;
-    }
-  }
-</style>
+```text
+180 x 120   translate(0, 0)
+180 x 240   translate(180px, 0)
+120 x 120   translate(360px, 0)
+240 x 160   translate(360px, 120px)
+120 x 200   translate(0, 120px)
+180 x 100   translate(120px, 240px)
+240 x 120   translate(300px, 280px)
+120 x 160   translate(0, 320px)
 ```
 
-### Dynamic Content Handling
+The element ends up 480px tall, which the component also sets, so it
+occupies exactly the height its packing needs. The fourth child is the
+one that shows the heuristic at work: rather than continuing the first row, it
+drops onto the ledge the third child left at `y = 120`.
 
-```html
-<rectpackr-layout id="dynamic-layout">
-  <!-- Content can be added/removed dynamically -->
-</rectpackr-layout>
+## Three attributes, and what they change
 
-<script>
-  // The layout automatically adjusts to content changes
-  document.getElementById('dynamic-layout').appendChild(newElement);
-</script>
+Positions are written to one CSS property per child, chosen by `positioning`,
+and measured from one corner, chosen by the two direction attributes.
+
+| Attribute     | Values               | Default     | Effect                              |
+| ------------- | -------------------- | ----------- | ----------------------------------- |
+| `positioning` | `transform` `offset` | `transform` | Which property carries the position |
+| `x-direction` | `ltr` `rtl`          | `ltr`       | Which side packing starts from      |
+| `y-direction` | `ttb` `btt`          | `ttb`       | Which edge the packing grows from   |
+
+Any other value falls back to the default, so a misspelled attribute changes
+nothing. Changing one at run time re-packs the layout and clears the property
+the previous setting was using. Writing the value already set does nothing. The
+first three of the same eight children, placed by `inset` under
+`positioning="offset"`, and anchored top-right under `x-direction="rtl"`:
+
+```text
+            positioning="offset"   x-direction="rtl"
+180 x 120   0 auto auto 0          translate(0, 0)
+180 x 240   0 auto auto 180px      translate(-180px, 0)
+120 x 120   0 auto auto 360px      translate(-360px, 0)
 ```
 
-## 🎯 Live Demos
+Under `transform` the component owns both properties: `transform` inline, and
+`inset` fixed to a corner by an `!important` rule in its shadow root. `offset`
+writes `inset` and leaves `transform` to your own rules.
 
-### Consistent Width Gallery
+## What it watches
 
-See predictable masonry-style layouts with equal-width elements
+Three observers keep the layout current, and every one of them ends in the
+same re-pack, batched into a single animation frame:
 
-[View on CodePen](https://codepen.io/styiannis/pen/ogbzBXg)
+- A `ResizeObserver` on each child, for content that changes size.
+- A `MutationObserver` on the element, for children added or removed. The
+  property the component wrote to a removed child is cleared.
+- A `ResizeObserver` on the slot in its shadow root, for a change of width.
 
-### Mixed Dimension Gallery
+Images that have not finished loading are watched separately and trigger a
+re-measurement when they arrive, which is what keeps a gallery from packing
+itself against zero-height placeholders.
 
-Explore optimal packing of variably-sized elements and aspect ratios
+## API
 
-[View on CodePen](https://codepen.io/styiannis/pen/XJXjayR)
+The element is the API. The default export is its class, which types a
+reference to the element, answers `instanceof`, and is what a second tag name
+is built from. A constructor is registered only once; a subclass is a new one.
 
-### Interactive Playground
+| Surface                                   | Notes                                                  |
+| ----------------------------------------- | ------------------------------------------------------ |
+| `<rectpackr-layout>`                      | Registered on import, if the name is still free        |
+| `positioning` `x-direction` `y-direction` | The observed attributes, listed above                  |
+| `default` export                          | The `HTMLElement` subclass, for typing and subclassing |
 
-Experiment with real-time controls and dynamic content manipulation
+There are no methods, no properties and no events. The layout is a function of
+the children and the three attributes, and everything else is CSS.
 
-[View on CodePen](https://codepen.io/styiannis/pen/qEbqMBZ)
+## When not to use it
 
-## ✅ Browser Support
+Every child is positioned by fit, from script, and every change re-packs the
+whole set. These are the cases where that is the wrong trade.
 
-Modern browsers with Web Components support.
+| If this describes the problem                  | Reach for                                                                                                                          |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Columns of equal width, filled in turn         | a column layout in CSS — this is a packing heuristic, and children of unequal width interlock instead of queueing                  |
+| The visual order must match the document order | a flow layout — a later child can appear above an earlier one, while tab order and screen readers follow the document              |
+| The layout must exist without JavaScript       | a layout in CSS alone — nothing is positioned until the element is connected and a frame has run, and there is no server rendering |
+| Your own rules need `inset`                    | a wrapper inside each child to carry it — the component owns `inset` in both modes, and `offset` frees only `transform`            |
+| Thousands of children, changing often          | pagination or virtualisation — there is no incremental update, and every change re-packs every child                               |
 
-## 🔧 Issues and Support
+## Documentation
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/styiannis/rectpackr-layout/issues).
+- [Guides, the FAQ and the architecture write-up](https://github.com/styiannis/rectpackr-layout/tree/main/docs) —
+  laying out a first gallery, the behaviour that surprises people, and how the
+  component is built and what a re-pack costs.
+- [Live examples on CodePen](https://codepen.io/collection/dGpeLa) — a
+  gallery of equal widths, one of mixed sizes, and an interactive playground.
+- [Open an issue](https://github.com/styiannis/rectpackr-layout/issues)
+  for a question or a bug report.
 
-## 📄 License
-
-This project is licensed under the [MIT License](https://github.com/styiannis/rectpackr-layout?tab=MIT-1-ov-file#readme).
+Released under the
+[MIT License](https://github.com/styiannis/rectpackr-layout/blob/main/LICENSE).
