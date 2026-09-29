@@ -91,7 +91,7 @@ export class RectpackrLayout extends HTMLElement {
     oldValue: string | null,
     newValue: string | null
   ) {
-    if (this.shadowRoot && oldValue !== newValue) {
+    if (this.shadowRoot && this.isConnected && oldValue !== newValue) {
       this.#clear();
       this.#render();
     }

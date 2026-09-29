@@ -1,3 +1,4 @@
+import { MockResizeObserver } from './mocks';
 import { generateHTMLElements, setupTest, validateChildStyle } from './util';
 import {
   EmptyStringValueOption,
@@ -300,5 +301,41 @@ describe('Change attributes', () => {
     expectPacked();
 
     clear();
+  });
+
+  it('Defer an attribute change on a detached element to reconnection', () => {
+    const { clear, init, changeAttributes, wcElement } = setupTest(100);
+
+    init();
+
+    const shadowRoot = wcElement.shadowRoot!;
+    const shadowRootSlot = shadowRoot.querySelector('slot')!;
+    const shadowRootStyle = shadowRoot.querySelector('style')!;
+    const slotCallbacks = () =>
+      MockResizeObserver.getElementCallbacks(shadowRootSlot);
+
+    expect(slotCallbacks()).toHaveLength(1);
+
+    document.body.removeChild(wcElement);
+
+    expect(slotCallbacks()).toBeUndefined();
+
+    changeAttributes({ positioning: 'offset' }, { triggerRender: false });
+
+    expect(shadowRootStyle.textContent).toContain(
+      shadowRootTransformChildrenStyle.ltr
+    );
+
+    document.body.appendChild(wcElement);
+
+    expect(slotCallbacks()).toHaveLength(1);
+
+    expect(shadowRootStyle.textContent).toContain(
+      shadowRootOffsetChildrenStyle
+    );
+
+    clear();
+
+    expect(slotCallbacks()).toBeUndefined();
   });
 });
