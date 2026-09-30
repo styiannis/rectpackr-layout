@@ -4,7 +4,7 @@ From an empty page to a packed gallery: what to install, what the element
 needs from your CSS, what it writes back to your children, and what to do
 about content that arrives late.
 
-**Last verified:** 2026-09-29 · v1.0.1 · needs a DOM
+**Last verified:** 2026-09-30 · v1.1.0 · needs a DOM
 
 ## Install
 
@@ -67,7 +67,7 @@ rectpackr-layout {
 }
 ```
 
-That width is the strip the packing runs against; it is read from the slot's
+That width is the strip the packing runs against. It is read from the slot's
 computed width when the element connects, and again whenever the element
 changes size. The children need a measurable width and height, from any
 source — explicit pixels, a percentage, an aspect ratio, or their own content.
@@ -171,8 +171,8 @@ const layout = document.querySelector('rectpackr-layout');
 const card = document.createElement('div');
 card.className = 'card';
 
-layout.append(card); // re-packs on the next frame
-layout.firstElementChild.remove(); // re-packs on the next frame
+layout.append(card); // packed with the others
+layout.firstElementChild.remove(); // the rest are packed again
 ```
 
 A child that is taken out has the `transform` (or `inset`) the component

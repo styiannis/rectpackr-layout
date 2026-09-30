@@ -18,9 +18,10 @@ npm install rectpackr-layout
 
 `yarn add` and `pnpm add` work the same way. The element runs in the browser,
 from Chrome 92, Firefox 92 and Safari 15.4. Installing and bundling it requires
-Node 20.19 or later. The package ships an ES build and a CommonJS build with
-type definitions for each, and a self-contained UMD bundle for a plain
-`<script>` tag. Its one runtime dependency is
+Node 18.12 or later. The package ships an ES build and a CommonJS build, with
+type definitions for each that TypeScript reads from 4.7, and a self-contained
+UMD bundle for a plain `<script>` tag. A custom-elements manifest describes the
+element's attributes to editors that read one. Its one runtime dependency is
 [best-fit-strip-pack](https://www.npmjs.com/package/best-fit-strip-pack), which
 supplies the placement heuristic. Importing the module registers
 `<rectpackr-layout>`. There is no constructor to call and no initialisation
@@ -79,9 +80,26 @@ and measured from one corner, chosen by the two direction attributes.
 
 Any other value falls back to the default, so a misspelled attribute changes
 nothing. Changing one at run time re-packs the layout and clears the property
-the previous setting was using. Writing the value already set does nothing. The
-first three of the same eight children, placed by `inset` under
-`positioning="offset"`, and anchored top-right under `x-direction="rtl"`:
+the previous setting was using. Writing the value already set does nothing.
+
+```html
+<script src="https://unpkg.com/rectpackr-layout"></script>
+
+<rectpackr-layout positioning="offset" style="display: block; width: 600px">
+  <div style="width: 180px; height: 120px"></div>
+  <div style="width: 180px; height: 240px"></div>
+  <div style="width: 120px; height: 120px"></div>
+</rectpackr-layout>
+
+<rectpackr-layout x-direction="rtl" style="display: block; width: 600px">
+  <div style="width: 180px; height: 120px"></div>
+  <div style="width: 180px; height: 240px"></div>
+  <div style="width: 120px; height: 120px"></div>
+</rectpackr-layout>
+```
+
+The three children are placed by `inset` under the first element, and
+anchored top-right under the second:
 
 ```text
             positioning="offset"   x-direction="rtl"
@@ -103,6 +121,17 @@ same re-pack, batched into a single animation frame:
 - A `MutationObserver` on the element, for children added or removed. The
   property the component wrote to a removed child is cleared.
 - A `ResizeObserver` on the slot in its shadow root, for a change of width.
+
+Adding or removing a child is ordinary DOM work:
+
+```javascript
+const layout = document.querySelector('rectpackr-layout');
+const card = document.createElement('div');
+card.style.cssText = 'width: 120px; height: 80px';
+
+layout.append(card); // packed with the others
+layout.firstElementChild.remove(); // the rest are packed again
+```
 
 Images that have not finished loading are watched separately and trigger a
 re-measurement when they arrive, which is what keeps a gallery from packing

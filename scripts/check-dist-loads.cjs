@@ -5,6 +5,13 @@
 // value isn't the module's exports. Gated on the file existing, so pruning a
 // format needs no edit here.
 
+if (!process.features.require_module) {
+  console.warn(
+    `check-dist-loads skipped: jsdom needs require(esm), which Node ${process.versions.node} does not enable.`
+  );
+  process.exit(0);
+}
+
 const { JSDOM } = require('jsdom');
 const { existsSync, readFileSync } = require('node:fs');
 const { join } = require('node:path');

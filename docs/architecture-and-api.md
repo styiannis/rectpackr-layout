@@ -1,6 +1,6 @@
 # Architecture and API
 
-**Last verified:** 2026-09-29 · v1.0.1
+**Last verified:** 2026-09-30 · v1.1.0
 
 ## The public surface is one element
 
@@ -37,7 +37,7 @@ with it.
 short enough that what happens inside it can be read off the page, **and so can
 the resources it requires**. `updateStripPack` is one loop, and its allocations
 are one array, one scratch position and, per child, a record holding a
-two-number tuple; `startObservingImages` adds at most one listener per
+two-number tuple. `startObservingImages` adds at most one listener per
 incomplete image and records it in a map that `stopObservingImages` drains.
 Nothing in the layer allocates in a place the reader cannot see.
 
@@ -305,8 +305,9 @@ in. The format is carried by the extension — `.mjs` and `.d.mts` against
 `.cjs` and `.d.cts` — rather than inferred from a `type` field. The build then
 runs the custom-elements analyser over the ES output, which turns the JSDoc on
 the class into `dist/custom-elements.json`. Two scripts check what came out of
-all that. `check-declared-paths` verifies that every path `package.json`
-declares exists and carries the extension its condition implies.
+all that. `check-declared-paths` verifies that each path `package.json`
+declares for the build output exists, and that `main`, `module`, `types` and
+every `exports` entry carry the extension of their module system.
 `check-dist-loads` loads each built format the way a consumer would: the
 CommonJS entry through `require` and through `import`, the ES entry through
 `import`, and the UMD bundle both through `require` and from a script tag.

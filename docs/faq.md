@@ -3,7 +3,7 @@
 Behaviour that surprises people, the errors you can meet, and the
 integration questions a custom element raises.
 
-**Last verified:** 2026-09-29 · v1.0.1
+**Last verified:** 2026-09-30 · v1.1.0
 
 ## Behaviour
 
@@ -251,10 +251,10 @@ The published JavaScript targets ES2022, so the class's private field and
 methods ship as native syntax. They reached each engine earlier than the
 feature in the table.
 
-Everything else is toolchain: `engines` declares Node ≥ 20.19 and npm ≥ 10,
+Everything else is toolchain: `engines` declares Node ≥ 18.12 and npm ≥ 8,
 which is what installs and bundles the package rather than what runs it.
-TypeScript users need a version that understands the `exports` field — 4.7 or
-later with `moduleResolution` set to `node16`, `nodenext` or `bundler`.
+TypeScript users need 4.7 or later, the first version that reads `.d.mts` and
+`.d.cts` declarations.
 
 ### How do I test a component that uses it?
 

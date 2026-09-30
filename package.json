@@ -1,6 +1,6 @@
 {
   "name": "rectpackr-layout",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Best-fit rectangle packing as a custom element: it measures its children, of any size, and packs them again as they resize, arrive or leave.",
   "keywords": [
     "custom-element",
@@ -40,8 +40,8 @@
   ],
   "sideEffects": true,
   "engines": {
-    "node": ">=20.19.0",
-    "npm": ">=10.0.0"
+    "node": ">=18.12.0",
+    "npm": ">=8.0.0"
   },
   "devEngines": {
     "runtime": {
