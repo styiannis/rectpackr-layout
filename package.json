@@ -66,7 +66,7 @@
     "clear": "node ./scripts/clear.cjs ./build ./code_documentation ./coverage_report ./dist",
     "format": "prettier -w ./",
     "lint": "oxlint --deny-warnings src scripts",
-    "prepack": "npm i && npm run build",
+    "prepack": "npm run build",
     "reset": "npm run clear && node ./scripts/clear.cjs ./node_modules",
     "reset-hard": "npm run reset && node ./scripts/clear.cjs ./package-lock.json ./yarn.lock ./pnpm-lock.yaml",
     "test": "jest",
