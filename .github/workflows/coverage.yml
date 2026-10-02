@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
@@ -19,15 +19,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
 
       - name: Test script with coverage reporting
         run: npm run test-coverage
 
       - name: Upload code coverage
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329
         with:
           file: ./coverage_report/lcov.info
+          coverage-reporter-version: v0.6.22
