@@ -3,7 +3,7 @@ description: Create a new tag
 
 inputs:
   tag:
-    type: string
+    description: Tag to create and push
     required: true
 
 runs:

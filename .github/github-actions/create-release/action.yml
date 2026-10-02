@@ -3,19 +3,19 @@ description: Create a new release
 
 inputs:
   github_token:
-    type: string
+    description: Token used by the gh CLI
     required: true
   tag:
-    type: string
+    description: Tag to create the release from
     required: true
   draft:
-    type: boolean
+    description: Create the release as a draft ('true' or 'false')
     required: false
-    default: false
+    default: 'false'
   prerelease:
-    type: boolean
+    description: Mark the release as a pre-release ('true' or 'false')
     required: false
-    default: false
+    default: 'false'
 
 runs:
   using: composite
@@ -36,8 +36,6 @@ runs:
             gh release create "$TAG" --generate-notes --draft
           fi
         else
-          echo "Creating release: $TAG"
-
           if [ "$PRERELEASE" == "true" ]; then
             echo "Creating pre-release: $TAG"
             gh release create "$TAG" --generate-notes --prerelease

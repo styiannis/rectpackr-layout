@@ -3,10 +3,10 @@ description: Checks if the provided release exists
 
 inputs:
   github_token:
-    type: string
+    description: Token used by the gh CLI
     required: true
   tag:
-    type: string
+    description: Release tag to look up
     required: true
 
 outputs:
