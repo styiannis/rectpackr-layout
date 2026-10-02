@@ -83,9 +83,11 @@ function checkPathsExist(paths) {
     return;
   }
 
-  console.error(
-    `Found invalid package paths\n\n${missing.map((path, i) => `[${i + 1}] ${path}`).join('\n')}\n`
-  );
+  const invalidPaths = missing
+    .map((path, i) => `[${i + 1}] ${path}`)
+    .join('\n');
+
+  console.error(`Found invalid package paths\n\n${invalidPaths}\n`);
 
   process.exitCode = 1;
 }
