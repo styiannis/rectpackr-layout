@@ -200,4 +200,51 @@ describe('Container element mutations', () => {
 
     clear();
   });
+
+  it('Clear the position of removed children only', () => {
+    const children = generateHTMLElements(3);
+    const childWidth = 50;
+    const childHeight = 25;
+    const dimensions = { width: childWidth, height: childHeight };
+
+    const { clear, init, replaceChildren } = setupTest(
+      childWidth * children.length,
+      children.reduce(
+        (acc, curr) => acc.set(curr, dimensions),
+        new Map<HTMLElement, IRectangle>()
+      )
+    );
+
+    init();
+
+    const size = { width: `${childWidth}px`, height: `${childHeight}px` };
+
+    validateChildStyle(children[0]!, { ...size, transform: 'translate(0, 0)' });
+    validateChildStyle(children[1]!, {
+      ...size,
+      transform: `translate(${childWidth}px, 0)`,
+    });
+    validateChildStyle(children[2]!, {
+      ...size,
+      transform: `translate(${2 * childWidth}px, 0)`,
+    });
+
+    // Reorder two children and remove the third, with no re-pack after it.
+    replaceChildren(
+      new Map([
+        [children[2]!, dimensions],
+        [children[0]!, dimensions],
+      ]),
+      { triggerRender: false }
+    );
+
+    validateChildStyle(children[0]!, { ...size, transform: 'translate(0, 0)' });
+    validateChildStyle(children[1]!, { ...size, transform: '' });
+    validateChildStyle(children[2]!, {
+      ...size,
+      transform: `translate(${2 * childWidth}px, 0)`,
+    });
+
+    clear();
+  });
 });

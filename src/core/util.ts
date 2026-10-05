@@ -5,7 +5,7 @@ import { IRectpackr, IRectpackrChildElement } from './types';
 /* -------------------------- // Helper functions -------------------------- */
 /* ------------------------------------------------------------------------- */
 
-const isValidChildInstance = (el: Element): el is IRectpackrChildElement =>
+const isValidChildInstance = (el: Node): el is IRectpackrChildElement =>
   el instanceof HTMLElement || el instanceof SVGElement;
 
 function render(instance: IRectpackr) {
@@ -19,6 +19,17 @@ function render(instance: IRectpackr) {
     instance.isPending.render = false;
     updateStyle(instance, updateStripPack(instance));
   });
+}
+
+function resetChildStyle(
+  instance: IRectpackr,
+  element: IRectpackrChildElement
+) {
+  if (instance.config.positioning === 'offset') {
+    element.style.inset = '';
+  } else {
+    element.style.transform = '';
+  }
 }
 
 function restartObservingChildren(instance: IRectpackr) {
@@ -41,8 +52,11 @@ function restartObservingImages(instance: IRectpackr) {
 }
 
 function startObservingChildren(instance: IRectpackr) {
+  instance.children.clear();
+
   for (const child of instance.childrenContainer.children) {
     if (isValidChildInstance(child)) {
+      instance.children.set(child, { width: 0, height: 0 });
       instance.observers.childrenResize.observe(child, { box: 'border-box' });
     }
   }
@@ -102,7 +116,7 @@ function updateStripPack(instance: IRectpackr) {
   // The position to use if an element has zero dimension.
   const hiddenPosition = { x: 0, y: 0 };
 
-  for (const { element, height: h, width } of instance.children) {
+  for (const [element, { height: h, width }] of instance.children) {
     const w = Math.min(width, instance.stripPack.stripWidth);
 
     const position =
@@ -158,8 +172,25 @@ function updateStyle(
 /* -------------------------- Helper functions // -------------------------- */
 /* ------------------------------------------------------------------------- */
 
-export function onChildrenContainerMutation(instance: IRectpackr) {
+export function onChildrenContainerMutation(
+  instance: IRectpackr,
+  records: MutationRecord[]
+) {
+  for (const { removedNodes } of records) {
+    for (const node of removedNodes) {
+      if (
+        isValidChildInstance(node) &&
+        // Still in the container: moved (a keyed reorder), not removed.
+        node.parentNode !== instance.childrenContainer &&
+        instance.children.delete(node)
+      ) {
+        resetChildStyle(instance, node);
+      }
+    }
+  }
+
   if (instance.childrenContainer.children.length === 0) {
+    instance.children.clear();
     onChildResize(instance, []);
   }
 
@@ -171,15 +202,14 @@ export function onChildResize(
   instance: IRectpackr,
   entries: ResizeObserverEntry[]
 ) {
-  instance.children.length = 0;
-
   for (const { borderBoxSize, target } of entries) {
     if (isValidChildInstance(target)) {
-      instance.children.push({
-        element: target,
-        width: borderBoxSize[0] ? borderBoxSize[0].inlineSize : 0,
-        height: borderBoxSize[0] ? borderBoxSize[0].blockSize : 0,
-      });
+      const child = instance.children.get(target);
+
+      if (child) {
+        child.width = borderBoxSize[0] ? borderBoxSize[0].inlineSize : 0;
+        child.height = borderBoxSize[0] ? borderBoxSize[0].blockSize : 0;
+      }
     }
   }
 
@@ -206,12 +236,8 @@ export function onContainerResize(instance: IRectpackr) {
 
 export function resetStyle(instance: IRectpackr) {
   // Reset children style
-  for (const { element } of instance.children) {
-    if (instance.config.positioning === 'offset') {
-      element.style.inset = '';
-    } else {
-      element.style.transform = '';
-    }
+  for (const element of instance.children.keys()) {
+    resetChildStyle(instance, element);
   }
 
   // Reset container style

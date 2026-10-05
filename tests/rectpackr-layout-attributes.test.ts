@@ -1,3 +1,4 @@
+import { MockResizeObserver } from './mocks';
 import { generateHTMLElements, setupTest, validateChildStyle } from './util';
 import {
   EmptyStringValueOption,
@@ -260,5 +261,81 @@ describe('Change attributes', () => {
     );
 
     clear();
+  });
+
+  it('Skip an attribute write that keeps its value', () => {
+    const children = generateHTMLElements(2);
+    const childWidth = 50;
+    const childHeight = 25;
+    const dimensions = { width: childWidth, height: childHeight };
+
+    const { clear, init, changeAttributes } = setupTest(
+      childWidth * children.length,
+      children.reduce(
+        (acc, curr) => acc.set(curr, dimensions),
+        new Map<HTMLElement, IRectangle>()
+      ),
+      { positioning: 'transform' }
+    );
+
+    init();
+
+    const expectPacked = () => {
+      validateChildStyle(children[0]!, {
+        width: `${childWidth}px`,
+        height: `${childHeight}px`,
+        transform: 'translate(0, 0)',
+      });
+      validateChildStyle(children[1]!, {
+        width: `${childWidth}px`,
+        height: `${childHeight}px`,
+        transform: `translate(${childWidth}px, 0)`,
+      });
+    };
+
+    expectPacked();
+
+    // A rebuild would clear the styles, and nothing re-packs after it.
+    changeAttributes({ positioning: 'transform' }, { triggerRender: false });
+
+    expectPacked();
+
+    clear();
+  });
+
+  it('Defer an attribute change on a detached element to reconnection', () => {
+    const { clear, init, changeAttributes, wcElement } = setupTest(100);
+
+    init();
+
+    const shadowRoot = wcElement.shadowRoot!;
+    const shadowRootSlot = shadowRoot.querySelector('slot')!;
+    const shadowRootStyle = shadowRoot.querySelector('style')!;
+    const slotCallbacks = () =>
+      MockResizeObserver.getElementCallbacks(shadowRootSlot);
+
+    expect(slotCallbacks()).toHaveLength(1);
+
+    document.body.removeChild(wcElement);
+
+    expect(slotCallbacks()).toBeUndefined();
+
+    changeAttributes({ positioning: 'offset' }, { triggerRender: false });
+
+    expect(shadowRootStyle.textContent).toContain(
+      shadowRootTransformChildrenStyle.ltr
+    );
+
+    document.body.appendChild(wcElement);
+
+    expect(slotCallbacks()).toHaveLength(1);
+
+    expect(shadowRootStyle.textContent).toContain(
+      shadowRootOffsetChildrenStyle
+    );
+
+    clear();
+
+    expect(slotCallbacks()).toBeUndefined();
   });
 });

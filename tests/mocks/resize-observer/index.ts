@@ -20,4 +20,5 @@ afterEach(() => {
   clearAllInstancesData();
 });
 
+export { MockResizeObserver };
 export * from './utils';
