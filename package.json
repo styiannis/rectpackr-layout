@@ -1,44 +1,54 @@
 {
   "name": "rectpackr-layout",
   "version": "1.0.1",
-  "description": "A web component that creates layouts by packing HTML elements as rectangles using a best-fit 2D strip-packing algorithm. Automatically measures dimensions and handles mixed content.",
+  "description": "Best-fit rectangle packing as a custom element: it measures its children, of any size, and packs them again as they resize, arrive or leave.",
   "keywords": [
-    "best-fit",
     "custom-element",
     "custom-elements",
-    "dom",
-    "layout",
+    "web-component",
+    "web-components",
+    "rectangle-packing",
+    "best-fit",
+    "strip-packing",
     "masonry",
     "masonry-layout",
-    "responsive",
     "responsive-layout",
-    "rectangle-packing",
-    "strip-packing",
-    "web-component",
-    "web-components"
+    "layout",
+    "typescript"
   ],
   "author": "Yiannis Stergiou <hello@styiannis.dev>",
   "license": "MIT",
+  "homepage": "https://github.com/styiannis/rectpackr-layout",
   "repository": {
     "type": "git",
-    "url": "https://github.com/styiannis/rectpackr-layout.git"
+    "url": "git+https://github.com/styiannis/rectpackr-layout.git"
   },
   "bugs": {
     "url": "https://github.com/styiannis/rectpackr-layout/issues"
   },
+  "type": "commonjs",
   "source": "src/index.ts",
-  "main": "dist/cjs/index.js",
-  "module": "dist/es/index.js",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/es/index.mjs",
+  "types": "dist/@types/cjs/index.d.cts",
   "unpkg": "dist/umd/index.js",
   "jsdelivr": "dist/umd/index.js",
-  "types": "dist/@types/index.d.ts",
+  "customElements": "dist/custom-elements.json",
   "files": [
     "CHANGELOG.md",
     "dist"
   ],
+  "sideEffects": true,
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=18.12.0",
     "npm": ">=8.0.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=22.12.0",
+      "onFail": "warn"
+    }
   },
   "commitlint": {
     "extends": [
@@ -46,46 +56,57 @@
     ]
   },
   "scripts": {
-    "build": "npx rimraf ./dist && rollup -c",
-    "dev": "npx rimraf ./dist && rollup -c --watch",
+    "analyze": "cem analyze --globs \"dist/es/**/*.mjs\" --outdir ./dist",
+    "build": "node ./scripts/clear.cjs ./dist && rollup -c && npm run analyze",
+    "dev": "node ./scripts/clear.cjs ./dist && rollup -c --watch",
+    "check-declared-paths": "node ./scripts/check-declared-paths.cjs",
+    "check-dist-loads": "node ./scripts/check-dist-loads.cjs",
     "check-types": "tsc --noEmit",
-    "check-updates": "npx npm-check-updates",
-    "ci": "npm run check-types && npm run lint && npm run build && npm run validate-exports",
-    "clear": "npx rimraf ./build ./coverage_report ./dist",
-    "format": "npx prettier -w ./",
-    "lint": "npx oxlint@latest src",
-    "prepack": "npm i && npm run build",
-    "reset": "npm run clear && npx rimraf ./node_modules ./package-lock.json ./yarn.lock ./pnpm-lock.yaml",
+    "check-updates": "npx npm-check-updates@23",
+    "clear": "node ./scripts/clear.cjs ./build ./coverage_report ./dist",
+    "format": "prettier -w ./",
+    "lint": "oxlint --deny-warnings src scripts",
+    "prepack": "npm run build",
+    "reset": "npm run clear && node ./scripts/clear.cjs ./node_modules",
+    "reset-hard": "npm run reset && node ./scripts/clear.cjs ./package-lock.json ./yarn.lock ./pnpm-lock.yaml",
     "test": "jest",
-    "test-coverage": "npx rimraf ./coverage_report && jest --coverage --coverageDirectory=coverage_report",
+    "test-coverage": "node ./scripts/clear.cjs ./coverage_report && jest --coverage --coverageDirectory=coverage_report",
     "test-coverage-watch": "npm run test-coverage -- --watchAll",
     "test-watch": "jest --watchAll",
-    "validate-exports": "node ./scripts/validate-exports.js"
+    "verify": "npm run check-types && npm run lint && npm run build && npm run check-declared-paths && npm run check-dist-loads"
   },
   "dependencies": {
-    "best-fit-strip-pack": "^1.0.2"
+    "best-fit-strip-pack": "^1.2.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.2",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.4",
-    "@tsconfig/node22": "^22.0.2",
+    "@custom-elements-manifest/analyzer": "^0.11.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.7.1",
-    "jest": "^30.2.0",
-    "jest-environment-jsdom": "^30.2.0",
-    "rollup": "^4.52.4",
-    "rollup-plugin-dts": "^6.2.3",
-    "ts-jest": "^29.4.5",
+    "@types/node": "^26.6.3",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
+    "jsdom": "^28.1.0",
+    "oxlint": "^1.87.0",
+    "prettier": "^3.9.9",
+    "rollup": "^4.64.0",
+    "rollup-plugin-dts": "^6.5.1",
+    "ts-jest": "^29.4.14",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3"
   },
   "exports": {
     ".": {
-      "import": "./dist/es/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/@types/index.d.ts",
-      "default": "./dist/es/index.js"
-    }
+      "import": {
+        "types": "./dist/@types/es/index.d.mts",
+        "default": "./dist/es/index.mjs"
+      },
+      "require": {
+        "types": "./dist/@types/cjs/index.d.cts",
+        "default": "./dist/cjs/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
   }
 }

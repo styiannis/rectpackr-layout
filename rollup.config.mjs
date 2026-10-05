@@ -6,72 +6,71 @@ import { dts } from 'rollup-plugin-dts';
 
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
-function output(
+const pkgExternals = [
+  ...Object.keys(pkg.dependencies || {}),
+  ...Object.keys(pkg.peerDependencies || {}),
+  ...Object.keys(pkg.optionalDependencies || {}),
+];
+
+const isExternalModule = (id) =>
+  pkgExternals.some((name) => id === name || id.startsWith(`${name}/`));
+
+const makeOutputOptions = (
   preserveModulesRoot,
   dir,
   format,
+  ext,
   preserveModules = true,
   name = undefined
-) {
-  return { dir, format, name, preserveModules, preserveModulesRoot };
-}
+) => ({
+  dir,
+  name,
+  format,
+  preserveModulesRoot,
+  preserveModules,
+  entryFileNames: `[name]${ext}`,
+  chunkFileNames: `[name]${ext}`,
+  // 'auto' (the default) collapses a default-only module to
+  // `module.exports = value`, but the emitted .d.cts always declares it as
+  // `export { value as default }` -- i.e. `exports.default`. Forcing
+  // 'named' keeps the two in sync for CJS.
+  exports: format === 'cjs' ? 'named' : 'auto',
+});
 
-function external() {
-  const externalModules = (externals) =>
-    0 === externals.length
-      ? () => false
-      : (id) => new RegExp(`^(${externals.join('|')})($|/)`).test(id);
-
-  return externalModules([
-    ...Object.keys(pkg.dependencies || {}),
-    ...Object.keys(pkg.peerDependencies || {}),
-    ...Object.keys(pkg.optionalDependencies || {}),
-  ]);
-}
-
-function CJS(input, srcDir, distDir, useExternal) {
-  const format = 'cjs';
+const buildJS = (format, srcFile, srcDir, distDir, useExternal) => {
   const outDir = `${distDir}/${format}`;
+  const extension = format === 'es' ? '.mjs' : '.cjs';
 
   return {
-    input,
-    output: output(srcDir, outDir, format),
-    plugins: [resolve(), typescript({ compilerOptions: { outDir } })],
-    external: useExternal ? external() : undefined,
+    input: srcFile,
+    output: makeOutputOptions(srcDir, outDir, format, extension),
+    plugins: [
+      ...(useExternal ? [] : [resolve()]),
+      typescript({ compilerOptions: { outDir } }),
+    ],
+    external: useExternal ? isExternalModule : undefined,
   };
-}
+};
 
-function ES(input, srcDir, distDir, useExternal) {
-  const format = 'es';
-  const outDir = `${distDir}/${format}`;
+const buildTypes = (format, srcFile, srcDir, distDir, useExternal) => {
+  const outDir = `${distDir}/@types/${format}`;
+  const extension = format === 'es' ? '.d.mts' : '.d.cts';
 
   return {
-    input,
-    output: output(srcDir, outDir, format),
-    plugins: [resolve(), typescript({ compilerOptions: { outDir } })],
-    external: useExternal ? external() : undefined,
+    input: srcFile,
+    output: makeOutputOptions(srcDir, outDir, format, extension),
+    plugins: [...(useExternal ? [] : [resolve()]), dts()],
+    external: useExternal ? isExternalModule : undefined,
   };
-}
+};
 
-function Types(input, srcDir, distDir, useExternal) {
-  const format = 'es';
-  const outDir = `${distDir}/@types`;
-
-  return {
-    input,
-    output: output(srcDir, outDir, format),
-    plugins: [resolve(), typescript({ compilerOptions: { outDir } }), dts()],
-    external: useExternal ? external() : undefined,
-  };
-}
-
-function UMD(input, srcDir, distDir, name, minified = false) {
+const buildUMD = (srcFile, srcDir, distDir, name, minified = false) => {
   const format = 'umd';
   const outDir = `${distDir}/${format}`;
 
   const ret = {
-    input,
-    output: output(srcDir, outDir, format, false, name),
+    input: srcFile,
+    output: makeOutputOptions(srcDir, outDir, format, '.js', false, name),
     plugins: [resolve(), typescript({ compilerOptions: { outDir } })],
   };
 
@@ -79,19 +78,22 @@ function UMD(input, srcDir, distDir, name, minified = false) {
     ret.plugins.push(terser());
     ret.output.dir = undefined;
     ret.output.file = `${distDir}/${format}/index.js`;
-    ret.output.sourcemap = true;
   }
 
   return ret;
-}
+};
 
 const srcDir = 'src';
+const srcFile = `${srcDir}/index.ts`;
 const distDir = 'dist';
-const inputFile = `${srcDir}/index.ts`;
+
+// Declared dependencies stay external; false inlines them via resolve().
+const useExternal = true;
 
 export default [
-  CJS(inputFile, srcDir, distDir, true),
-  ES(inputFile, srcDir, distDir, true),
-  Types(inputFile, srcDir, distDir, true),
-  UMD(inputFile, srcDir, distDir, 'RectpackrLayout', true),
+  ...['cjs', 'es'].flatMap((format) => [
+    buildJS(format, srcFile, srcDir, distDir, useExternal),
+    buildTypes(format, srcFile, srcDir, distDir, useExternal),
+  ]),
+  buildUMD(srcFile, srcDir, distDir, 'RectpackrLayout', true),
 ];
