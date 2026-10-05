@@ -1,14 +1,16 @@
 import RectpackrLayout from '../../src';
 
-const areIdenticalArrays = (a: any[], b: any[]) =>
+const arraysEqual = (a: any[], b: any[]) =>
   a.length === b.length && a.every((val, i) => val === b[i]);
 
+const stringSort = (a: string, b: string) => a.localeCompare(b);
+
 export function isValidRectpackrLayoutInstance(instance: unknown) {
-  const props = Object.getOwnPropertyNames(instance).sort();
+  const props = Object.getOwnPropertyNames(instance).sort(stringSort);
 
   const protoProps = Object.getOwnPropertyNames(
     Object.getPrototypeOf(instance)
-  ).sort();
+  ).sort(stringSort);
 
   return (
     'object' === typeof instance &&
@@ -16,8 +18,8 @@ export function isValidRectpackrLayoutInstance(instance: unknown) {
     instance instanceof HTMLElement &&
     Object.getPrototypeOf(instance) === RectpackrLayout.prototype &&
     Object.getPrototypeOf(instance) !== HTMLElement.prototype &&
-    areIdenticalArrays(props, []) &&
-    areIdenticalArrays(protoProps, [
+    arraysEqual(props, []) &&
+    arraysEqual(protoProps, [
       'attributeChangedCallback',
       'connectedCallback',
       'constructor',

@@ -25,7 +25,7 @@ export function create<R extends IRectpackr>(
   const containerResize = new ResizeObserver(() => onContainerResize(instance));
 
   const stripPack = new BestFitStripPack(
-    Math.max(1, parseFloat(getComputedStyle(container).width))
+    Math.max(1, Number.parseFloat(getComputedStyle(container).width))
   );
 
   const instance = {
