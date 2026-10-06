@@ -45,9 +45,9 @@ const getStyleTextContent = (config: IRectpackrConfig) => {
 /* ------------------------------------------------------------------------- */
 
 /**
- * Measures each child, places it as low as it fits, and writes the position
- * back to the child's inline style. Packs again when a child's size, the set
- * of children or the element's own width changes.
+ * Measures each child, places it as near the top as it fits, and writes the
+ * position back to the child's inline style. Packs again when a child's size,
+ * the set of children or the element's own width changes.
  *
  * @summary Packs its children as rectangles into a strip as wide as itself.
  *
