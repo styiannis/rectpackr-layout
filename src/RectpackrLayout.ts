@@ -1,3 +1,9 @@
+/**
+ * Declares the class behind `<rectpackr-layout>`. The package entry point
+ * registers it.
+ *
+ * @module
+ */
 import { IRectpackrConfig, IRectpackr, rectpackr } from './core';
 
 /* ------------------------------------------------------------------------- */
@@ -38,6 +44,23 @@ const getStyleTextContent = (config: IRectpackrConfig) => {
 /* -------------------------- Helper functions // -------------------------- */
 /* ------------------------------------------------------------------------- */
 
+/**
+ * Measures each child, places it as near the top as it fits, and writes the
+ * position back to the child's inline style. Packs again when a child's size,
+ * the set of children or the element's own width changes.
+ *
+ * @summary Packs its children as rectangles into a strip as wide as itself.
+ *
+ * @slot - The children to pack. Each one is given `position: absolute`.
+ *
+ * @attr {'transform' | 'offset'} [positioning=transform] - Which property
+ * carries each child's position: `transform` or `inset`. Any other value
+ * falls back to `transform`.
+ * @attr {'ltr' | 'rtl'} [x-direction=ltr] - Which side packing starts from.
+ * Any other value falls back to `ltr`.
+ * @attr {'ttb' | 'btt'} [y-direction=ttb] - Which edge the packing grows from.
+ * Any other value falls back to `ttb`.
+ */
 export class RectpackrLayout extends HTMLElement {
   #obj: IRectpackr | undefined = undefined;
 
